@@ -1,31 +1,51 @@
-var express = require('express');
-var bodyParser = require('body-parser');
+let http = require('http');
+let express = require('express');
+let bodyParser = require('body-parser');
 
-var index = require('./routes/index');
+let app = express();
+let router = express.Router();
+let server = http.createServer(app);
 
-var app = express();
+server.listen(3000);
+server.on('listening', onListening);
+
+let io = require('./socket.js')(server);
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 
-app.use('/', index);
+router.get('/print', function(req, res, next) {
+    io.emit('print', {'printer_id': req.query.printer_id, 'name': req.query.name});
+    res.send('printing...');
+});
+
+app.use('/', router);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+app.use(function (req, res, next) {
+    let err = new Error('Not Found');
+    err.status = 404;
+    next(err);
 });
 
 // error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+app.use(function (err, req, res, next) {
+    // set locals, only providing error in development
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+    // render the error page
+    res.status(err.status || 500);
+    res.send('error');
+
+    console.error(err);
 });
 
-module.exports = app;
+function onListening() {
+    let addr = server.address();
+    let bind = typeof addr === 'string'
+        ? 'pipe ' + addr
+        : 'port ' + addr.port;
+
+    console.log('Listening on ' + bind);
+}
