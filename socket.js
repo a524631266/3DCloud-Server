@@ -4,7 +4,7 @@ let profiles = [
         "host_id": 190016740214819,
         "type": "makerbot",
         "device": {
-            "com": "/dev/ttyACM0",
+            "com": "/dev/ttyACM0",          // todo: get rid of this
             "vendor_id": "23c1",
             "product_id": "b016",
             "serial": "7533131303335111C2A1",
@@ -29,7 +29,7 @@ module.exports = (server) => {
 
             for (let i = 0; i < profiles.length; i++) {
                 if (profiles[i]['host_id']              === data['host_id'] &&
-                    profiles[i]['device']['com']        === data['device']['com'] &&
+                    profiles[i]['device']['com']        === data['device']['com'] &&    // todo: get rid of this
                     profiles[i]['device']['vendor_id']  === data['device']['vendor_id'] &&
                     profiles[i]['device']['product_id'] === data['device']['product_id'] &&
                     profiles[i]['device']['serial']     === data['device']['serial']) {

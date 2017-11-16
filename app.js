@@ -14,9 +14,19 @@ let io = require('./socket.js')(server);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-router.get('/print', function(req, res, next) {
+router.get('/print', function(req, res) {
     io.emit('print', {'printer_id': req.query.printer_id, 'name': req.query.name});
     res.send('printing...');
+});
+
+router.get('/pause', function(req, res) {
+    io.emit('pause', {'printer_id': req.query.printer_id});
+    res.send('pausing...');
+});
+
+router.get('/unpause', function(req, res) {
+    io.emit('unpause', {'printer_id': req.query.printer_id});
+    res.send('unpausing...');
 });
 
 app.use('/', router);
@@ -29,7 +39,7 @@ app.use(function (req, res, next) {
 });
 
 // error handler
-app.use(function (err, req, res, next) {
+app.use(function (err, req, res) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
