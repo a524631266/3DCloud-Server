@@ -1,14 +1,8 @@
 let profiles = [
     {
-        "id": "oe586ubqeyvoa4",
+        "id": "d3b8b322d33baad341613523f1fc5fe327ca400eb8baef2f10216a48bc616603",
         "host_id": 190016740214819,
-        "type": "makerbot",
-        "device": {
-            "com": "/dev/ttyACM0",          // todo: get rid of this
-            "vendor_id": "23c1",
-            "product_id": "b016",
-            "serial": "7533131303335111C2A1",
-        }
+        "type": "makerbot"
     }
 ];
 
@@ -16,9 +10,13 @@ module.exports = (server) => {
     console.log('Initializing socket');
 
     let io = require('socket.io')(server);
+    let hosts = {};
 
     io.on('connection', function (client) {
-        console.log('client connected');
+        console.log('client ' + client.id + ' (' + client.handshake.query.host_id + ') connected');
+
+        let hostId = client.handshake.query.host_id;
+        hosts[hostId] = client;
 
         client.on('status', function (data) {
             console.log('status: ' + JSON.stringify(data))
@@ -28,11 +26,8 @@ module.exports = (server) => {
             console.log('got printer: ' + JSON.stringify(data));
 
             for (let i = 0; i < profiles.length; i++) {
-                if (profiles[i]['host_id']              === data['host_id'] &&
-                    profiles[i]['device']['com']        === data['device']['com'] &&    // todo: get rid of this
-                    profiles[i]['device']['vendor_id']  === data['device']['vendor_id'] &&
-                    profiles[i]['device']['product_id'] === data['device']['product_id'] &&
-                    profiles[i]['device']['serial']     === data['device']['serial']) {
+                if (profiles[i]['host_id']   === data['host_id'] &&
+                    profiles[i]['id'] === data['device']['id']) {
                     ack({'defined': true, 'profile': profiles[i]});
                 }
             }
@@ -41,11 +36,12 @@ module.exports = (server) => {
         });
 
         client.on('disconnect', function () {
+            delete hosts[hostId];
             console.log('client disconnected');
         });
     });
 
     console.log('Socket initialized');
 
-    return io;
+    return hosts;
 };

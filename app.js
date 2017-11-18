@@ -1,6 +1,7 @@
 let http = require('http');
 let express = require('express');
 let bodyParser = require('body-parser');
+let requireDirectory = require('require-directory');
 
 let app = express();
 let router = express.Router();
@@ -9,25 +10,18 @@ let server = http.createServer(app);
 server.listen(3000);
 server.on('listening', onListening);
 
-let io = require('./socket.js')(server);
+let hosts = require('./socket.js')(server);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-router.get('/print', function(req, res) {
-    io.emit('print', {'printer_id': req.query.printer_id, 'name': req.query.name});
-    res.send('printing...');
-});
+let endpoints = require('./api');
 
-router.get('/pause', function(req, res) {
-    io.emit('pause', {'printer_id': req.query.printer_id});
-    res.send('pausing...');
-});
-
-router.get('/unpause', function(req, res) {
-    io.emit('unpause', {'printer_id': req.query.printer_id});
-    res.send('unpausing...');
-});
+for (let i in endpoints) {
+    let endpoint = endpoints[i](hosts);
+    console.log('Adding endpoint ' + endpoint.route);
+    router[endpoint.method](endpoint.route, endpoint.handler)
+}
 
 app.use('/', router);
 
@@ -39,14 +33,22 @@ app.use(function (req, res, next) {
 });
 
 // error handler
-app.use(function (err, req, res) {
+// noinspection JSUnusedLocalSymbols
+app.use(function (err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
 
     // render the error page
     res.status(err.status || 500);
-    res.send('error');
+
+    res.json({
+        'success': false,
+        'error': {
+            'type': err.constructor.name,
+            'message': err.message
+        }
+    });
 
     console.error(err);
 });
