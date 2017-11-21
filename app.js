@@ -1,7 +1,6 @@
 let http = require('http');
 let express = require('express');
 let bodyParser = require('body-parser');
-let requireDirectory = require('require-directory');
 
 let app = express();
 let router = express.Router();
@@ -18,6 +17,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 let endpoints = require('./api');
 
 for (let i in endpoints) {
+    // noinspection JSUnfilteredForInLoop
     let endpoint = endpoints[i](hosts);
     console.log('Adding endpoint ' + endpoint.route);
     router[endpoint.method](endpoint.route, endpoint.handler)
