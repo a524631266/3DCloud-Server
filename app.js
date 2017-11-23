@@ -19,7 +19,7 @@ let endpoints = require('./api');
 for (let i in endpoints) {
     // noinspection JSUnfilteredForInLoop
     let endpoint = endpoints[i](hosts);
-    console.log('Adding endpoint ' + endpoint.route);
+    console.log('Adding endpoint /api' + endpoint.route);
     router[endpoint.method]('/api' + endpoint.route, endpoint.handler)
 }
 

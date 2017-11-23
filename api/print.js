@@ -5,7 +5,7 @@ module.exports = function(hosts) {
         handler: function(req, res) {
             console.log('Sending print request');
 
-            if (hosts[req.query.host_id] !== undefined) {
+            if (hosts[req.query.host_id]) {
                 hosts[req.query.host_id].emit('print', {'printer_id': req.query.printer_id, 'name': req.query.name}, function(data) {
                     res.json(data)
                 });
