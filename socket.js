@@ -1,12 +1,12 @@
 let util = require('util');
 
 let profiles = [
-    {
-        "id": "d3b8b322d33baad341613523f1fc5fe327ca400eb8baef2f10216a48bc616603",
-        "name": "RPL2-04",
-        "host_id": 190016740214819,
-        "type": "makerbot"
-    }
+    //{
+    //    "id": "d3b8b322d33baad341613523f1fc5fe327ca400eb8baef2f10216a48bc616603",
+    //    "name": "RPL2-04",
+    //    "host_id": 190016740214819,
+    //    "type": "makerbot"
+    //}
 ];
 
 module.exports = (server) => {
@@ -29,14 +29,13 @@ module.exports = (server) => {
             console.log('Received request for printer with ID ' + data['device']['id']);
 
             for (let i = 0; i < profiles.length; i++) {
-                if (profiles[i]['host_id']   === data['host_id'] &&
-                    profiles[i]['id'] === data['device']['id']) {
+                if (profiles[i]['host_id'] === data['host_id'] && profiles[i]['id'] === data['device']['id']) {
                     console.log(util.format('Sending printer profile for %s (%s)', profiles[i]['id'], profiles[i]['name']));
-                    ack({'defined': true, 'profile': profiles[i]});
+                    client.emit('printer-updated', profiles[i], function (response) {
+                        console.log(response)
+                    });
                 }
             }
-
-            ack({'defined': false})
         });
 
         client.on('disconnect', function () {
