@@ -3,7 +3,7 @@ module.exports = function(io) {
         route: '/unpause',
         method: 'get',
         handler: function(req, res) {
-            console.log('Sending unpause request');
+            global.logger.info('Sending unpause request');
             io.hosts[req.query.host_id].emit('unpause', {'printer_id': req.query.printer_id}, function(data) {
                 res.json(data)
             });
