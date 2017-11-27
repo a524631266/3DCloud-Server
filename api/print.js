@@ -7,6 +7,7 @@ module.exports = function(io) {
 
             let machineId = req.params['machine_id'];
             let printerId = req.params['printer_id'];
+            let printKey  = req.query['key'];
             let printName = req.query['name'];
 
             if (!printerId)
@@ -18,7 +19,7 @@ module.exports = function(io) {
             if (!io.hosts[machineId])
                 throw new Error('Host is not connected.');
 
-            io.hosts[machineId].emit('print', {'printer_id': printerId, 'name': printName}, function(data) {
+            io.hosts[machineId].emit('print', {'printer_id': printerId, 'key': printKey, 'name': printName}, function(data) {
                 res.json(data)
             });
         }
