@@ -16,7 +16,7 @@ module.exports = function(hosts) {
             };
 
             if (hosts[req.body['host_id']]) {
-                hosts[req.body['host_id']].emit('printer-updated', data, function(data) {
+                hosts[req.body['host_id']].emit('printer_updated', data, function(data) {
                     res.json(data)
                 });
             } else {

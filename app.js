@@ -24,6 +24,7 @@ for (let i in endpoints) {
 }
 
 app.use('/', router);
+app.use('/static', express.static('./static'));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

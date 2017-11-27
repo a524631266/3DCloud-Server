@@ -1,12 +1,12 @@
-module.exports = function(hosts) {
+module.exports = function(io) {
     return {
         route: '/print',
         method: 'get',
         handler: function(req, res) {
             console.log('Sending print request');
 
-            if (hosts[req.query.host_id]) {
-                hosts[req.query.host_id].emit('print', {'printer_id': req.query.printer_id, 'name': req.query.name}, function(data) {
+            if (io.hosts[req.query.host_id]) {
+                io.hosts[req.query.host_id].emit('print', {'printer_id': req.query.printer_id, 'name': req.query.name}, function(data) {
                     res.json(data)
                 });
             } else {
