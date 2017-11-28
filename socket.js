@@ -82,7 +82,7 @@ module.exports = (server) => {
 
     let statusUpdate = () => {
         users.emit('status', statuses);
-        global.logger.info(JSON.stringify(statuses));
+        global.logger.debug(JSON.stringify(statuses));
         setTimeout(statusUpdate, 1000);
     };
 

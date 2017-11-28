@@ -5,7 +5,7 @@ module.exports = function(hosts) {
         handler: function(req, res) {
             console.log('Sending printer update');
 
-            if (!(req.body['host_id'] && req.body['id'] && req.body['name'] && req.body['type']))
+            if (!req.body['host_id'] || !req.body['id'] || !req.body['name'] || !req.body['type'])
                 throw new Error('Not all required arguments are present');
 
             let data = {
