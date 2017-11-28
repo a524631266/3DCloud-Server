@@ -1,10 +1,8 @@
 let http = require('http');
 let express = require('express');
 let bodyParser = require('body-parser');
-let requireDirectory = require('require-directory');
 
 let app = express();
-let router = express.Router();
 let server = http.createServer(app);
 
 global.logger  = require('tracer').colorConsole({
@@ -25,34 +23,17 @@ global.logger  = require('tracer').colorConsole({
     level: 'info'
 });
 
+global.logger.info('Starting 3DCloud Server');
+
 server.listen(3000);
 server.on('listening', onListening);
 
-let hosts = require('./socket.js')(server);
+let io = require('./socket.js')(server);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-let apiEndpoints = requireDirectory(module, './api');
-
-function addEndpoints(endpoints) {
-    for (let name in endpoints) {
-        // noinspection JSUnfilteredForInLoop
-        let endpoint = endpoints[name];
-
-        if (typeof endpoint === 'function') {
-            let result = endpoint(hosts);
-            global.logger.info('Adding endpoint /api' + result.route);
-            router[result.method]('/api' + result.route, result.handler);
-        } else {
-            addEndpoints(endpoint)
-        }
-    }
-}
-
-addEndpoints(apiEndpoints);
-
-app.use('/', router);
+app.use('/api', require('./api.js')(io));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
