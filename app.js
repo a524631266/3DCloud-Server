@@ -1,6 +1,7 @@
 let http = require('http');
 let express = require('express');
 let bodyParser = require('body-parser');
+let requireDirectory = require('require-directory');
 
 let app = express();
 let router = express.Router();
@@ -20,7 +21,8 @@ global.logger  = require('tracer').colorConsole({
             error: "\033[0;31m{{timestamp}} |  ERROR | {{file}}:{{line}} {{message}}\033[0m"   // https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
         }
     ],
-    dateformat: "yyyy-mm-dd HH:MM:ss.l"
+    dateformat: "yyyy-mm-dd HH:MM:ss.l",
+    level: 'info'
 });
 
 server.listen(3000);
@@ -31,17 +33,26 @@ let hosts = require('./socket.js')(server);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-let endpoints = require('./api');
+let apiEndpoints = requireDirectory(module, './api');
 
-for (let i in endpoints) {
-    // noinspection JSUnfilteredForInLoop
-    let endpoint = endpoints[i](hosts);
-    global.logger.info('Adding endpoint /api' + endpoint.route);
-    router[endpoint.method]('/api' + endpoint.route, endpoint.handler)
+function addEndpoints(endpoints) {
+    for (let name in endpoints) {
+        // noinspection JSUnfilteredForInLoop
+        let endpoint = endpoints[name];
+
+        if (typeof endpoint === 'function') {
+            let result = endpoint(hosts);
+            global.logger.info('Adding endpoint /api' + result.route);
+            router[result.method]('/api' + result.route, result.handler);
+        } else {
+            addEndpoints(endpoint)
+        }
+    }
 }
 
+addEndpoints(apiEndpoints);
+
 app.use('/', router);
-app.use('/static', express.static('./static'));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
