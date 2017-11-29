@@ -8,8 +8,7 @@ module.exports = function(io) {
             for (let hostId in io.hosts) {
                 // noinspection JSUnfilteredForInLoop
                 hosts.push({
-                    'id': hostId,
-                    'status': 'online'
+                    'id': hostId
                 });
             }
 
