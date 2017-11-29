@@ -1,6 +1,5 @@
 let requireDirectory = require('require-directory');
 let express = require('express');
-let cors = require('cors');
 
 module.exports = function(io) {
     global.logger.info('Loading API endpoints');
@@ -15,7 +14,7 @@ module.exports = function(io) {
             if (typeof endpoint === 'function') {
                 let result = endpoint(io);
                 global.logger.info('Adding endpoint /api' + result.route);
-                router[result.method](result.route, cors(), result.handler);
+                router[result.method](result.route, result.handler);
             } else {
                 addEndpoints(endpoint)
             }

@@ -1,6 +1,7 @@
 let http = require('http');
 let express = require('express');
 let bodyParser = require('body-parser');
+let cors = require('cors');
 
 let app = express();
 let server = http.createServer(app);
@@ -32,6 +33,8 @@ let io = require('./socket.js')(server);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
+
+app.use(cors());
 
 app.use('/api', require('./api.js')(io));
 
