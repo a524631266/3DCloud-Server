@@ -20,7 +20,7 @@ global.logger  = require('tracer').colorConsole({
         }
     ],
     dateformat: "yyyy-mm-dd HH:MM:ss.l",
-    level: 'info'
+    level: 'log'
 });
 
 global.logger.info('Starting 3DCloud Server');

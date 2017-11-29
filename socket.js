@@ -57,7 +57,7 @@ module.exports = (server) => {
                     global.logger.info(util.format('Sending printer profile for %s (%s)', profiles[i]['name'], profiles[i]['id']));
 
                     client.emit('printer_updated', profiles[i], function (response) {
-                        global.logger.info('printer_updated response: ' + JSON.stringify(response))
+                        global.logger.log('printer_updated response: ' + JSON.stringify(response))
                     });
 
                     users.emit('printer_updated', profiles[i]);
@@ -82,7 +82,7 @@ module.exports = (server) => {
 
     let statusUpdate = () => {
         users.emit('status', statuses);
-        global.logger.debug(JSON.stringify(statuses));
+        global.logger.log(JSON.stringify(statuses));
         setTimeout(statusUpdate, 1000);
     };
 
