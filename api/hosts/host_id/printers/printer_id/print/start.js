@@ -1,11 +1,11 @@
-module.exports = function(io) {
+module.exports = function(db, io) {
     return {
-        route: '/machines/:machine_id/printers/:printer_id/print/start',
+        route: '/hosts/:host_id/printers/:printer_id/print/start',
         method: 'get',
         handler: function(req, res) {
             global.logger.info('Sending print request');
 
-            let machineId = req.params['machine_id'];
+            let machineId = req.params['host_id'];
             let printerId = req.params['printer_id'];
             let printKey  = req.query['key'];
             let printName = req.query['name'];

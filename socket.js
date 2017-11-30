@@ -20,62 +20,75 @@ let profiles = [
 
 let statuses = {};
 
-module.exports = (server) => {
+/**
+ *
+ * @param server
+ * @param {DB} db
+ * @returns {{hosts: {}, profiles: *[], statuses: {}}}
+ */
+module.exports = (server, db) => {
     global.logger.info('Initializing socket...');
 
     let io = require('socket.io')(server);
     let hosts = {};
 
-    let machines = io.of('/machines');
+    let machines = io.of('/hosts');
     let users = io.of('/users');
 
-    users.on('connection', function (client) {
+    users.on('connection', async function (client) {
         global.logger.info(util.format('Client %s connected to users channel', client.id));
     });
 
-    machines.on('connection', function (client) {
+    machines.on('connection', async function (client) {
         let hostId = client.handshake.query.host_id;
 
         if (!hostId) {
-            global.logger.error('Client attempted to connect to machines namespace without host ID');
+            global.logger.error('Client attempted to connect to hosts namespace without host ID');
             client.disconnect();
         }
 
         hosts[hostId] = client;
 
-        global.logger.info(util.format('Client %s (machine ID %s) connected to machines namespace', client.id, hostId));
+        await db.updateHost(hostId);
 
-        client.on('status', function (data) {
+        global.logger.info(util.format('Client %s (machine ID %s) connected to hosts namespace', client.id, hostId));
+
+        client.on('status', async function (data) {
             statuses[hostId] = data
         });
 
-        client.on('printer', function (data) {
+        client.on('printer', async function (data) {
             global.logger.info('Received request for printer with ID ' + data['device']['id']);
 
-            for (let i = 0; i < profiles.length; i++) {
-                if (profiles[i]['id'] === data['device']['id']) {
-                    global.logger.info(util.format('Sending printer profile for %s (%s)', profiles[i]['name'], profiles[i]['id']));
+            await db.updateDevice(data['device']['id'], hostId);
 
-                    client.emit('printer_updated', profiles[i], function (response) {
-                        global.logger.log('printer_updated response: ' + JSON.stringify(response))
-                    });
+            users.emit('device_updated', data['device']); // TODO: actual structure
 
-                    users.emit('printer_updated', profiles[i]);
+            if (await db.printerExists(data['device']['id'])) {
+                let printer = await db.getPrinter(data['device']['id']);
 
-                    break;
-                }
+                let send = {
+                    'device_id': printer['_id'],
+                    'driver': printer['driver']
+                };
+
+                client.emit('printer_updated', send, function (response) {
+                    global.logger.log('printer_updated response: ' + JSON.stringify(response));
+
+                    users.emit('printer_updated', printer);
+                });
             }
         });
 
-        client.on('disconnect', function () {
+        client.on('disconnect', async function () {
             delete hosts[hostId];
         })
     });
 
-    io.on('connection', function (client) {
+    io.on('connection', async function (client) {
         global.logger.info(util.format('Client %s connected', client.id));
 
-        client.on('disconnect', function () {
+        client.on('disconnect', async function () {
             global.logger.info(util.format('Client %s disconnected', client.id));
         });
     });

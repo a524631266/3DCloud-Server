@@ -1,7 +1,7 @@
 let requireDirectory = require('require-directory');
 let express = require('express');
 
-module.exports = function(io) {
+module.exports = function(db, io) {
     global.logger.info('Loading API endpoints');
 
     let router = express.Router();
@@ -12,7 +12,7 @@ module.exports = function(io) {
             let endpoint = endpoints[name];
 
             if (typeof endpoint === 'function') {
-                let result = endpoint(io);
+                let result = endpoint(db, io);
                 global.logger.info('Adding endpoint /api' + result.route);
                 router[result.method](result.route, result.handler);
             } else {
