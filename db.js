@@ -1,4 +1,5 @@
-let mongodb = require('mongodb');
+let MongoClient = require('mongodb').MongoClient;
+let ObjectId = require('mongodb').ObjectId;
 let util = require('util');
 
 const DATABASE_URL = 'localhost';
@@ -9,11 +10,12 @@ module.exports.DB = class {
     static async connect() {
         global.logger.info(util.format('Connecting to database at %s...', DATABASE_URL));
 
-        this.db = await mongodb.MongoClient.connect('mongodb://' + DATABASE_URL + ':' + DATABASE_PORT + '/' + DATABASE_NAME);
+        this.db = await MongoClient.connect('mongodb://' + DATABASE_URL + ':' + DATABASE_PORT + '/' + DATABASE_NAME);
 
         global.logger.info('Successfully connected.');
     }
 
+    //region Hosts
     static async getHosts() {
         global.logger.log('Fetching all hosts');
 
@@ -53,7 +55,9 @@ module.exports.DB = class {
             });
         }
     }
+    //endregion
 
+    //region Devices
     static async getDevice(id) {
         global.logger.log(util.format('Fetching device with ID "%s"', id));
 
@@ -103,7 +107,9 @@ module.exports.DB = class {
             return result.result.n === 1
         });
     }
+    //endregion
 
+    //region Printers
     static async getPrinters() {
         global.logger.log('Fetching all printers');
 
@@ -156,4 +162,41 @@ module.exports.DB = class {
 
         return await this.getPrinter(id) !== null;
     }
+    //endregion
+
+    //region Files
+    static async getFiles() {
+        global.logger.log('Fetching all files from database');
+
+        let collection = this.db.collection('files');
+
+        return await collection.find().toArray();
+    }
+
+    static async getFile(id) {
+        global.logger.log(util.format('Fetching file with ID "%s"', id));
+
+        let collection = this.db.collection('files');
+
+        return await collection.findOne({'_id': ObjectId(id)});
+    }
+
+    static async addFile(key, name) {
+        global.logger.log(util.format('Adding file "%s" (%s) to database', name, key));
+
+        let collection = this.db.collection('files');
+
+        return await collection.insertOne({'key': key, 'name': name, 'date_added': new Date()});
+    }
+
+    static async updateFile(id, name) {
+        let collection = this.db.collection('files');
+
+        return await collection.updateOne({'_id': id}, {'name': name})
+    }
+
+    static async fileExists(id) {
+        return await this.getFile(id) !== null;
+    }
+    //endregion
 };

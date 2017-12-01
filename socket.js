@@ -1,36 +1,17 @@
 let util = require('util');
 
-let profiles = [
-    {
-        "id": "d3b8b322d33baad341613523f1fc5fe327ca400eb8baef2f10216a48bc616603",
-        "name": "RPL2-04",
-        "driver": "makerbot"
-    },
-    {
-        "id": "90bbc252a7cfe1894b4e48a912e213a8e682e45047b185d7eab8ba33d12b695a",
-        "name": "RPL2-01",
-        "driver": "makerbot"
-    },
-    {
-        "id": "9af6c7a2cac7db05b950c9bf1cd4ed5ca2b88e5720f28e53c93e5c232746a536",
-        "name": "RPL2-05",
-        "driver": "makerbot"
-    }
-];
-
-let statuses = {};
-
 /**
  *
  * @param server
  * @param {DB} db
- * @returns {{hosts: {}, profiles: *[], statuses: {}}}
+ * @returns {{hosts: {}}}
  */
 module.exports = (server, db) => {
     global.logger.info('Initializing socket...');
 
     let io = require('socket.io')(server);
     let hosts = {};
+    let statuses = {};
 
     let machines = io.of('/hosts');
     let users = io.of('/users');
@@ -52,10 +33,6 @@ module.exports = (server, db) => {
         await db.updateHost(hostId);
 
         global.logger.info(util.format('Client %s (machine ID %s) connected to hosts namespace', client.id, hostId));
-
-        client.on('status', async function (data) {
-            statuses[hostId] = data
-        });
 
         client.on('printer', async function (data) {
             global.logger.info('Received request for printer with ID ' + data['device']['id']);
@@ -80,8 +57,13 @@ module.exports = (server, db) => {
             }
         });
 
+        client.on('status', function (data) {
+            statuses[hostId] = data;
+        });
+
         client.on('disconnect', async function () {
             delete hosts[hostId];
+            delete statuses[hostId];
         })
     });
 
@@ -95,7 +77,7 @@ module.exports = (server, db) => {
 
     let statusUpdate = () => {
         users.emit('status', statuses);
-        global.logger.log(JSON.stringify(statuses));
+
         setTimeout(statusUpdate, 1000);
     };
 
@@ -104,8 +86,6 @@ module.exports = (server, db) => {
     global.logger.info('Socket initialized');
 
     return {
-        hosts: hosts,
-        profiles: profiles,
-        statuses: statuses
+        hosts: hosts
     };
 };

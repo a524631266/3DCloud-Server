@@ -38,14 +38,10 @@ async function run() {
 
     let io = require('./socket.js')(server, db);
 
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({extended: false}));
-
-    app.use(morgan('tiny'));
-    app.use(cors());
-
     app.use(function(req, res, next) {
         res.error = (message, code = 500) => {
+            global.logger.error(message);
+
             res.status(code).json({
                 'success': false,
                 'error': {
@@ -56,7 +52,9 @@ async function run() {
         };
 
         res.exception = (ex) => {
-            res.status(ex.code || 500).json({
+            global.logger.error(ex);
+
+            res.status(ex.status || 500).json({
                 'success': false,
                 'error': {
                     'type': ex.constructor.name || 'Error',
@@ -68,6 +66,13 @@ async function run() {
 
         next();
     });
+
+    app.use(bodyParser.urlencoded({ extended: true }));
+    app.use(bodyParser.json());
+    app.use(bodyParser.raw({ limit: '100mb', type: '*/*' }));
+
+    app.use(morgan('tiny'));
+    app.use(cors());
 
     app.use('/api', require('./api.js')(db, io));
 
