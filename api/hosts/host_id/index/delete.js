@@ -1,11 +1,10 @@
 module.exports = function(db, io) {
     return {
-        route: '/devices/:device_id',
+        route: '/hosts/:host_id',
         method: 'delete',
         handler: async function (req, res) {
             try {
-                await db.deleteDevice(req.params['device_id']);
-
+                await db.deleteHost(req.params['host_id']);
                 res.success();
             } catch (ex) {
                 res.exception(ex);

@@ -1,16 +1,11 @@
 let util = require('util');
 
-/**
- *
- * @param server
- * @param {DB} db
- * @returns {{hosts: {}}}
- */
 module.exports = (server, db) => {
     global.logger.info('Initializing socket...');
 
     let io = require('socket.io')(server);
     let hosts = {};
+    let devices = {};
     let statuses = {};
 
     let machines = io.of('/hosts');
@@ -30,14 +25,15 @@ module.exports = (server, db) => {
 
         hosts[hostId] = client;
 
-        await db.updateHost(hostId);
+        if (!await db.hostExists(hostId))
+            await db.addHost(hostId);
 
         global.logger.info(util.format('Client %s (machine ID %s) connected to hosts namespace', client.id, hostId));
 
         client.on('printer', async function (data) {
             global.logger.info('Received request for printer with ID ' + data['device']['id']);
 
-            await db.updateDevice(data['device']['id'], hostId);
+            devices[data['device']['id']] = hostId;
 
             users.emit('device_updated', data['device']); // TODO: actual structure
 
@@ -86,6 +82,7 @@ module.exports = (server, db) => {
     global.logger.info('Socket initialized');
 
     return {
-        hosts: hosts
+        hosts: hosts,
+        devices: devices
     };
 };

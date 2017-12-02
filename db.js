@@ -38,22 +38,24 @@ module.exports.DB = class {
         return await this.getHost(id) !== null;
     }
 
-    static async updateHost(id) {
+    static async addHost(id) {
+        global.logger.log('Adding host with ID ' + id);
+
+        let name = 'Machine ' + id;
+
         let collection = this.db.collection('hosts');
 
-        if (await this.hostExists(id)) {
-            global.logger.log(util.format('Updating host with ID "%s"', id));
+        return await collection.insertOne({'_id': id, 'name': name}).then(result => {
+            return result.result.n === 1;
+        });
+    }
 
-            return await collection.updateOne({'_id': id}, {}).then((result) => {
-                return result.result.n === 1;
-            });
-        } else {
-            global.logger.log(util.format('Inserting host with ID "%s"', id));
+    static async deleteHost(id) {
+        global.logger.log('Deleting host with ID ' + id);
 
-            return await collection.insertOne({'_id': id}).then((result) => {
-                return result.result.n === 1;
-            });
-        }
+        let collection = this.db.collection('hosts');
+
+        return await collection.deleteOne({'_id': id});
     }
     //endregion
 
@@ -77,7 +79,7 @@ module.exports.DB = class {
     static async deviceExists(id) {
         global.logger.log(util.format('Checking if device with ID "%s" exists', id));
 
-        return this.getDevice(id) !== null;
+        return await this.getDevice(id) !== null;
     }
 
     static async updateDevice(id, hostId) {
@@ -86,13 +88,13 @@ module.exports.DB = class {
         if (await this.deviceExists(id)) {
             global.logger.log(util.format('Updating device with ID "%s"', id));
 
-            return collection.updateOne({'_id': id}, {'host_id': hostId}).then((result) => {
+            return await collection.updateOne({'_id': id}, {'host_id': hostId}).then((result) => {
                 return result.result.n === 1;
             });
         } else {
             global.logger.log(util.format('Inserting device with ID "%s"', id));
 
-            return collection.insertOne({'_id': id, 'host_id': hostId}).then((result) => {
+            return await collection.insertOne({'_id': id, 'host_id': hostId}).then((result) => {
                 return result.result.n === 1;
             });
         }
@@ -103,7 +105,7 @@ module.exports.DB = class {
 
         let collection = this.db.collection('devices');
 
-        return collection.deleteOne({'_id': id}).then((result) => {
+        return await collection.deleteOne({'_id': id}).then((result) => {
             return result.result.n === 1
         });
     }
@@ -115,7 +117,15 @@ module.exports.DB = class {
 
         let collection = this.db.collection('printers');
 
-        return await collection.find().toArray();
+        let printers = await collection.find().toArray();
+
+        printers.forEach(async printer => {
+            console.log(printer);
+            let device = await this.getDevice(printer.id);
+            console.log(device);
+        });
+
+        return printers;
     }
 
     static async getPrinter(id) {
@@ -186,17 +196,22 @@ module.exports.DB = class {
 
         let collection = this.db.collection('files');
 
-        return await collection.insertOne({'key': key, 'name': name, 'date_added': new Date()});
+        return collection.insertOne({'key': key, 'name': name, 'date_added': new Date()}).then(result => {
+            return result.ops[0];
+        });
     }
 
-    static async updateFile(id, name) {
+    static async deleteFile(id) {
+        global.logger.log('Deleting file with ID ' + id);
+
         let collection = this.db.collection('files');
 
-        return await collection.updateOne({'_id': id}, {'name': name})
-    }
-
-    static async fileExists(id) {
-        return await this.getFile(id) !== null;
+        return await collection.deleteOne({'_id': ObjectId(id)}).then(result => {
+            return result.result.n === 1;
+        }).catch(error => {
+            global.logger.error(error);
+            return false;
+        });
     }
     //endregion
 };

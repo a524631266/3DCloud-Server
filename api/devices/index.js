@@ -3,7 +3,11 @@ module.exports = function(db, io) {
         route: '/devices',
         method: 'get',
         handler: async function (req, res) {
-            res.send(await db.getDevices());
+            try {
+                res.success(await db.getDevices());
+            } catch (ex) {
+                res.exception(ex);
+            }
         }
     }
 };

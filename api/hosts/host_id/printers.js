@@ -1,12 +1,10 @@
 module.exports = function(db, io) {
     return {
-        route: '/devices/:device_id',
-        method: 'delete',
+        route: '/hosts/:host_id/printers',
+        method: 'get',
         handler: async function (req, res) {
             try {
-                await db.deleteDevice(req.params['device_id']);
-
-                res.success();
+                res.success(await db.getPrintersForHost(req.params['host_id']));
             } catch (ex) {
                 res.exception(ex);
             }

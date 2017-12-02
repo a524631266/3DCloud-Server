@@ -3,12 +3,15 @@ let express = require('express');
 let bodyParser = require('body-parser');
 let morgan = require('morgan');
 let cors = require('cors');
+let dateformat = require('dateformat');
+
 let db = require('./db').DB;
+let aws = require('./aws').AWSHelper;
 
 let app = express();
 let server = http.createServer(app);
 
-global.logger  = require('tracer').colorConsole({
+global.logger = require('tracer').colorConsole({
     transport: function(data) {
         console.log(data.output);
     },
@@ -16,6 +19,7 @@ global.logger  = require('tracer').colorConsole({
         "{{timestamp}} <{{title}}> {{file}}:{{line}} {{message}}",
         {
             log:   "\033[0;37m{{timestamp}} |    LOG | {{file}}:{{line}} {{message}}\033[0m",
+            trace: "\033[0;37m{{timestamp}} |  TRACE | {{file}}:{{line}} {{message}}\033[0m",
             debug: "\033[0;34m{{timestamp}} |  DEBUG | {{file}}:{{line}} {{message}}\033[0m",
             info:  "\033[0;32m{{timestamp}} |   INFO | {{file}}:{{line}} {{message}}\033[0m",
             warn:  "\033[0;33m{{timestamp}} |   WARN | {{file}}:{{line}} {{message}}\033[0m",  // for colors codes, see:
@@ -26,9 +30,7 @@ global.logger  = require('tracer').colorConsole({
     level: 'log'
 });
 
-run();
-
-async function run() {
+(async function () {
     global.logger.info('Starting 3DCloud Server');
 
     await db.connect();
@@ -39,14 +41,21 @@ async function run() {
     let io = require('./socket.js')(server, db);
 
     app.use(function(req, res, next) {
-        res.error = (message, code = 500) => {
+        res.success = (data) => {
+            res.json({
+                'success': true,
+                'data': data
+            });
+        };
+
+        res.error = (message, status = 500) => {
             global.logger.error(message);
 
-            res.status(code).json({
+            res.status(status).json({
                 'success': false,
                 'error': {
                     'message': message,
-                    'code': code
+                    'code': status
                 }
             });
         };
@@ -59,7 +68,8 @@ async function run() {
                 'error': {
                     'type': ex.constructor.name || 'Error',
                     'message': ex.message,
-                    'code': ex.status || 500
+                    'code': ex.code,
+                    'status': ex.status || 500
                 }
             });
         };
@@ -71,10 +81,23 @@ async function run() {
     app.use(bodyParser.json());
     app.use(bodyParser.raw({ limit: '100mb', type: '*/*' }));
 
-    app.use(morgan('tiny'));
+    app.use(morgan((tokens, req, res) => {
+        return [
+            dateformat('yyyy-mm-dd HH:MM:ss.l'),
+            '|   HTTP |',
+            tokens.method(req, res),
+            tokens.url(req, res),
+            tokens.status(req, res),
+            '-',
+            tokens.res(req, res, 'content-length') || 'none',
+            '-',
+            tokens['response-time'](req, res), 'ms'
+        ].join(' ');
+    }));
+
     app.use(cors());
 
-    app.use('/api', require('./api.js')(db, io));
+    app.use('/api', require('./api.js')(db, io, aws));
 
     // catch 404 and forward to error handler
     app.use(function (req, res, next) {
@@ -94,7 +117,7 @@ async function run() {
 
         global.logger.error(err);
     });
-}
+})();
 
 function onListening() {
     let addr = server.address();

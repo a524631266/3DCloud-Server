@@ -1,21 +1,24 @@
-let AWS = require('aws-sdk');
 let util = require('util');
-let config = require('../../../config');
 
-let s3 = new AWS.S3({accessKeyId: config.aws.accessKeyId, secretAccessKey: config.aws.secretAccessKey, region: config.aws.region});
-
-module.exports = function (db, io) {
+module.exports = function (db, io, aws) {
     return {
         route: '/files/:file_id/download',
         method: 'get',
         handler: async function (req, res) {
+            global.logger.info('Got download request for file ' + req.params['file_id']);
+
             let file = await db.getFile(req.params['file_id']);
 
-            console.log(file['name']);
+            if (!file)
+                res.error('File not found', 404);
 
-            s3.getObject({ Bucket: config.aws.bucket, Key: 'uploads/' + file['key'] }, (err, data) => {
+            try {
+                let data = await aws.getFile(file['key']);
+
                 res.header('Content-Disposition', util.format('attachment; filename="%s"', file['name'])).send(data.Body);
-            });
+            } catch (ex) {
+                res.exception(ex);
+            }
         }
     }
 };
