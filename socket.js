@@ -53,14 +53,18 @@ module.exports = (server, db) => {
             }
         });
 
-        client.on('status', function (data) {
+        client.on('status', (data) => {
             statuses[hostId] = data;
         });
 
-        client.on('disconnect', async function () {
+        client.on('print-status', (data) => {
+            global.logger.log(data)
+        });
+
+        client.on('disconnect', async () => {
             delete hosts[hostId];
             delete statuses[hostId];
-        })
+        });
     });
 
     io.on('connection', async function (client) {
