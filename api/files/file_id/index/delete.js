@@ -7,6 +7,7 @@ module.exports = function (db, io, aws) {
                 let file = await db.getFile(req.params['file_id']);
 
                 try {
+                    await db.deleteFile(file._id);
                     await aws.deleteFile(file.key);
                     res.success();
                 } catch (ex) {
