@@ -57,8 +57,18 @@ module.exports = (server, db) => {
             statuses[hostId] = data;
         });
 
-        client.on('print-status', (data) => {
-            global.logger.log(data)
+        client.on('print-status', async (data) => {
+            global.logger.log(data);
+
+            try {
+                await db.updatePrint(data['print_id'], data['status'], data['description']);
+            } catch (ex) {
+                global.logger.error(ex);
+            }
+        });
+
+        client.on('reset', async (data) => {
+            await db.resetHostPrints(hostId)
         });
 
         client.on('disconnect', async () => {

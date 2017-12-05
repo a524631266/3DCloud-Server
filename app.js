@@ -77,6 +77,8 @@ global.logger = require('tracer').colorConsole({
         next();
     });
 
+    app.use(cors());
+
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
     app.use(bodyParser.raw({ limit: '100mb', type: '*/*' }));
@@ -94,8 +96,6 @@ global.logger = require('tracer').colorConsole({
             tokens['response-time'](req, res), 'ms'
         ].join(' ');
     }));
-
-    app.use(cors());
 
     app.use('/api', require('./api.js')(db, io, aws));
 

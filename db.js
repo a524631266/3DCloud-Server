@@ -214,4 +214,68 @@ module.exports.DB = class {
         });
     }
     //endregion
+
+    //region Prints
+    static async getPrints() {
+        global.logger.log('Fetching all prints');
+
+        let collection = this.db.collection('prints');
+
+        return await collection.find().toArray();
+    }
+
+    static async getPrint(id) {
+        global.logger.log('Fetching print with ID ' + id);
+
+        let collection = this.db.collection('prints');
+
+        return await collection.findOne({'_id' : ObjectId(id)});
+    }
+
+    static async addPrint(fileId, hostId, printerId) {
+        global.logger.log(util.format('Adding print for "%s" on "%s" started on host "%s"', fileId, printerId, hostId));
+
+        let collection = this.db.collection('prints');
+
+        return await collection.insertOne({'file_id': fileId, 'host_id': hostId, 'printer_id': printerId, 'created': new Date(), 'status': 'pending'}).then(result => {
+            return result.ops[0];
+        });
+    }
+
+    static async updatePrint(printId, status, description) {
+        global.logger.log(util.format('Updating print "%s" to status "%s"', printId, status));
+
+        let collection = this.db.collection('prints');
+
+        let data = {
+            'status': status,
+            'description': description
+        };
+
+        if (status === 'running')
+            data['started'] = new Date();
+
+        if (['success', 'error', 'canceled'].includes(status))
+            data['completed'] = new Date();
+
+        return await collection.updateOne({'_id': ObjectId(printId)}, { $set: data });
+    }
+
+    static async deletePrint(printId) {
+        global.logger.log(util.format('Deleting print "%s"', printId));
+
+        let collection = this.db.collection('prints');
+
+        return await collection.deleteOne({'_id': ObjectId(printId)});
+    }
+
+    static async resetHostPrints(hostId) {
+        global.logger.log('Resetting printers for host ' + hostId);
+
+        let collection = this.db.collection('prints');
+
+        await collection.updateMany({ 'host_id': hostId, 'status': 'running' }, { $set: { 'status': 'error', 'description': 'Host lost power', 'completed': new Date() } });
+        await collection.updateMany({ 'host_id': hostId, 'status': 'pending' }, { $set: { 'status': 'error', 'description': 'Host lost power', 'completed': new Date() } });
+    }
+    //endregion
 };
