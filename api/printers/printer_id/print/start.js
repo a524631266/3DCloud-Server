@@ -37,6 +37,8 @@ module.exports = function(db, io) {
                     }, async function (data) {
                         res.json(data);
                     });
+
+                    io.namespaces.users.emit('print-started', print)
                 } catch (ex) {
                     res.exception(ex);
                 }

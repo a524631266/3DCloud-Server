@@ -237,7 +237,10 @@ module.exports.DB = class {
 
         let collection = this.db.collection('prints');
 
-        return await collection.insertOne({'file_id': fileId, 'host_id': hostId, 'printer_id': printerId, 'created': new Date(), 'status': 'pending'}).then(result => {
+        let file = await this.getFile(fileId);
+        let printer = await this.getPrinter(printerId);
+
+        return await collection.insertOne({'file_id': fileId, 'file_name': file.name, 'host_id': hostId, 'printer_id': printerId, 'printer_name': printer.name, 'created': new Date(), 'status': 'pending'}).then(result => {
             return result.ops[0];
         });
     }
@@ -274,8 +277,21 @@ module.exports.DB = class {
 
         let collection = this.db.collection('prints');
 
-        await collection.updateMany({ 'host_id': hostId, 'status': 'running' }, { $set: { 'status': 'error', 'description': 'Host lost power', 'completed': new Date() } });
-        await collection.updateMany({ 'host_id': hostId, 'status': 'pending' }, { $set: { 'status': 'error', 'description': 'Host lost power', 'completed': new Date() } });
+        await collection.updateMany(
+            {
+                'host_id': hostId,
+                $or: [
+                    { 'status': 'running' },
+                    { 'status': 'pending' }
+                ]
+            }, {
+                $set: {
+                    'status': 'error',
+                    'description': 'Host lost power',
+                    'completed': new Date()
+                }
+            }
+        );
     }
     //endregion
 };
