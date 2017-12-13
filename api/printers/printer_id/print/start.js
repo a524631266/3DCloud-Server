@@ -32,7 +32,7 @@ module.exports = function(db, io) {
                     io.hosts[hostId].emit('print', {
                         'printer_id': printerId,
                         'print_id': print['_id'],
-                        'key': file.key,
+                        'key': file['_id'],
                         'name': file.name
                     }, async function (data) {
                         res.json(data);
