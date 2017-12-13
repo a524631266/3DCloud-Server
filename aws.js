@@ -13,13 +13,19 @@ module.exports.AWSHelper = class {
             Body: body
         };
 
+        let options = {
+            partSize: 1024 * 1024 * 10
+        };
+
         return new Promise((resolve, reject) => {
-            s3.putObject(params, (err, data) => {
+            s3.upload(params, options, (err, data) => {
                 if (err)
                     reject(err);
                 else
                     resolve(data);
-            })
+            }).on('httpUploadProgress', (event) => {
+                console.log(event.loaded + '/' + event.total);
+            });
         })
     }
 
