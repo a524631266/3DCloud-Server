@@ -27,7 +27,7 @@ module.exports = function(db, io) {
 
             if (io.hosts[hostId]) {
                 try {
-                    let print = await db.addPrint(fileId, hostId, printerId);
+                    let print = await db.addPrint(fileId, printerId);
 
                     io.hosts[hostId].emit('print', {
                         'printer_id': printerId,
@@ -38,7 +38,7 @@ module.exports = function(db, io) {
                         res.json(data);
                     });
 
-                    io.namespaces.users.emit('print-started', print)
+                    io.namespaces.users.emit('print-started', print);
                 } catch (ex) {
                     res.exception(ex);
                 }

@@ -66,6 +66,7 @@ module.exports.DB = class {
 
         return await collection.deleteOne({'_id': id});
     }
+
     //endregion
 
     //region Devices
@@ -118,6 +119,7 @@ module.exports.DB = class {
             return result.result.n === 1
         });
     }
+
     //endregion
 
     //region Printers
@@ -126,15 +128,7 @@ module.exports.DB = class {
 
         let collection = this.db.collection('printers');
 
-        let printers = await collection.find().toArray();
-
-        printers.forEach(async printer => {
-            console.log(printer);
-            let device = await this.getDevice(printer.id);
-            console.log(device);
-        });
-
-        return printers;
+        return await collection.find().toArray();
     }
 
     static async getPrinter(id) {
@@ -181,6 +175,7 @@ module.exports.DB = class {
 
         return await this.getPrinter(id) !== null;
     }
+
     //endregion
 
     //region Files
@@ -222,6 +217,7 @@ module.exports.DB = class {
             return false;
         });
     }
+
     //endregion
 
     //region Prints
@@ -238,23 +234,62 @@ module.exports.DB = class {
 
         let collection = this.db.collection('prints');
 
-        return await collection.findOne({'_id' : ObjectId(id)});
+        return await collection.findOne({'_id': ObjectId(id)});
     }
 
-    static async addPrint(fileId, hostId, printerId) {
-        global.logger.log(util.format('Adding print for "%s" on "%s" started on host "%s"', fileId, printerId, hostId));
+    static async addPrint(fileId, printerId, status = 'pending') {
+        global.logger.log(util.format('Adding print for "%s" on "%s"', fileId, printerId));
 
         let collection = this.db.collection('prints');
 
         let file = await this.getFile(fileId);
         let printer = await this.getPrinter(printerId);
 
-        return await collection.insertOne({'file_id': fileId, 'file_name': file.name, 'host_id': hostId, 'printer_id': printerId, 'printer_name': printer.name, 'created': new Date(), 'status': 'pending'}).then(result => {
+        return await collection.insertOne({
+            'file_id': fileId,
+            'file_name': file.name,
+            'printer_id': printerId,
+            'printer_name': printer.name,
+            'created': new Date(),
+            'status': status
+        }).then(result => {
             return result.ops[0];
         });
     }
 
-    static async updatePrint(printId, status, description) {
+    static async queuePrint(fileId, printerId) {
+        global.logger.log(`Queueing print for file "${fileId}" on printer "${printerId}"`);
+
+        let print = await this.addPrint(fileId, printerId, 'queued');
+
+        let collection = this.db.collection('printers');
+
+        await collection.updateOne({'_id': printerId}, {$push: {'queue': print['_id']}});
+
+        return print;
+    }
+
+    static async getNextQueuedPrint(printerId) {
+        global.logger.log(`Fetching next print for printer "${printerId}"`);
+
+        let collection = this.db.collection('printers');
+
+        let result = await collection.findOne({'_id': printerId});
+
+        await collection.updateOne({'_id': printerId}, {$pop: {'queue': -1}});
+
+        if (result['queue'] && result['queue'][0]) {
+            let id = result['queue'][0];
+
+            await this.updatePrint(id, 'pending');
+
+            return await this.getPrint(id);
+        }
+
+        return null;
+    }
+
+    static async updatePrint(printId, status, description = null) {
         global.logger.log(util.format('Updating print "%s" to status "%s"', printId, status));
 
         let collection = this.db.collection('prints');
@@ -270,7 +305,7 @@ module.exports.DB = class {
         if (['success', 'error', 'canceled'].includes(status))
             data['completed'] = new Date();
 
-        return await collection.updateOne({'_id': ObjectId(printId)}, { $set: data });
+        return await collection.updateOne({'_id': ObjectId(printId)}, {$set: data});
     }
 
     static async deletePrint(printId) {
@@ -290,8 +325,8 @@ module.exports.DB = class {
             {
                 'host_id': hostId,
                 $or: [
-                    { 'status': 'running' },
-                    { 'status': 'pending' }
+                    {'status': 'running'},
+                    {'status': 'pending'}
                 ]
             }, {
                 $set: {
@@ -302,5 +337,6 @@ module.exports.DB = class {
             }
         );
     }
+
     //endregion
 };
