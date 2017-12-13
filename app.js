@@ -66,7 +66,7 @@ global.logger = require('tracer').colorConsole({
             res.status(ex.status || 500).json({
                 'success': false,
                 'error': {
-                    'type': ex.constructor.name || 'Error',
+                    'type': ex['type'] || ex.constructor.name || 'Error',
                     'message': ex.message,
                     'code': ex.code,
                     'status': ex.status || 500

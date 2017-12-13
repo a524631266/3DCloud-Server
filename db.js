@@ -305,7 +305,7 @@ module.exports.DB = class {
         if (['success', 'error', 'canceled'].includes(status))
             data['completed'] = new Date();
 
-        return await collection.updateOne({'_id': ObjectId(printId)}, {$set: data});
+        return await collection.updateOne({'_id': printId}, {$set: data});
     }
 
     static async deletePrint(printId) {

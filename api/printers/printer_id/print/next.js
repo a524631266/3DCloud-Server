@@ -27,14 +27,24 @@ module.exports = function(db, io) {
 
                 io.hosts[hostId].emit('print', {
                     'printer_id': printerId,
-                    'print_id': print['_id'],
+                    'print_id': print['_ide'],
                     'key': print['file_id'],
                     'name': print['file_name']
                 }, async function (data) {
-                    res.json(data);
+                    if (!data['success']) {
+                        if (data['error'] && data['error']['message']) {
+                            res.exception(data['error']);
+                            global.logger.error('Failed to start print: ' + data['error']['message']);
+                            await db.updatePrint(print['_id'], 'error', data['error']['message']);
+                        } else {
+                            res.error('Failed to start print');
+                            global.logger.error('Failed to start print');
+                            await db.updatePrint(print['_id'], 'error');
+                        }
+                    } else {
+                        io.namespaces.users.emit('print-started', print);
+                    }
                 });
-
-                io.namespaces.users.emit('print-started', print)
             } catch (ex) {
                 res.exception(ex);
             }
