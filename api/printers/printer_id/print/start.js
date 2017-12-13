@@ -27,7 +27,7 @@ module.exports = function(db, io) {
 
             if (io.hosts[hostId]) {
                 try {
-                    let print = await db.addPrint(fileId, printerId);
+                    let print = await db.addPrint(fileId, printerId, 'pending', hostId);
 
                     io.hosts[hostId].emit('print', {
                         'printer_id': printerId,

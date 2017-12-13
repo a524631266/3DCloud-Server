@@ -3,12 +3,12 @@ let ObjectId = require('mongodb').ObjectId;
 let util = require('util');
 
 const DATABASE_URL = 'localhost';
-const DATABASE_PORT = '27017';
+const DATABASE_PORT = 27017;
 const DATABASE_NAME = '3dcloud';
 
 module.exports.DB = class {
     static async connect() {
-        global.logger.info(util.format('Connecting to database at %s...', DATABASE_URL));
+        global.logger.info(`Connecting to database at ${DATABASE_URL}:${DATABASE_PORT}/${DATABASE_NAME}...`);
 
         this.db = await MongoClient.connect('mongodb://' + DATABASE_URL + ':' + DATABASE_PORT + '/' + DATABASE_NAME);
 
@@ -237,7 +237,7 @@ module.exports.DB = class {
         return await collection.findOne({'_id': ObjectId(id)});
     }
 
-    static async addPrint(fileId, printerId, status = 'pending') {
+    static async addPrint(fileId, printerId, status = 'pending', hostId = null) {
         global.logger.log(util.format('Adding print for "%s" on "%s"', fileId, printerId));
 
         let collection = this.db.collection('prints');
@@ -246,12 +246,13 @@ module.exports.DB = class {
         let printer = await this.getPrinter(printerId);
 
         return await collection.insertOne({
-            'file_id': fileId,
-            'file_name': file.name,
-            'printer_id': printerId,
-            'printer_name': printer.name,
-            'created': new Date(),
-            'status': status
+            file_id: fileId,
+            file_name: file.name,
+            printer_id: printerId,
+            printer_name: printer.name,
+            created: new Date(),
+            status: status,
+            host_id: hostId
         }).then(result => {
             return result.ops[0];
         });
@@ -289,6 +290,14 @@ module.exports.DB = class {
         return null;
     }
 
+    static async setPrintPending(printId, hostId) {
+        global.logger.log(util.format('Setting print "%s" as pending', printId));
+
+        let collection = this.db.collection('prints');
+
+        return await collection.updateOne({'_id': ObjectId(printId)}, {$set: {'status': 'pending', 'host_id': hostId}});
+    }
+
     static async updatePrint(printId, status, description = null) {
         global.logger.log(util.format('Updating print "%s" to status "%s"', printId, status));
 
@@ -305,7 +314,7 @@ module.exports.DB = class {
         if (['success', 'error', 'canceled'].includes(status))
             data['completed'] = new Date();
 
-        return await collection.updateOne({'_id': printId}, {$set: data});
+        return await collection.updateOne({'_id': ObjectId(printId)}, {$set: data});
     }
 
     static async deletePrint(printId) {

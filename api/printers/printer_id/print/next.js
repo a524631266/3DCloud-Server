@@ -25,9 +25,11 @@ module.exports = function(db, io) {
                     return;
                 }
 
+                await db.setPrintPending(print['_id'], hostId);
+
                 io.hosts[hostId].emit('print', {
                     'printer_id': printerId,
-                    'print_id': print['_ide'],
+                    'print_id': print['_id'],
                     'key': print['file_id'],
                     'name': print['file_name']
                 }, async function (data) {
@@ -42,6 +44,7 @@ module.exports = function(db, io) {
                             await db.updatePrint(print['_id'], 'error');
                         }
                     } else {
+                        res.success();
                         io.namespaces.users.emit('print-started', print);
                     }
                 });
