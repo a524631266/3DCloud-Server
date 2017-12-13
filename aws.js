@@ -65,4 +65,15 @@ module.exports.AWSHelper = class {
             })
         })
     }
+
+    static getPresignedDownloadUrl(key, name) {
+        let params = {
+            Bucket: config.aws.bucket,
+            Key: UPLOADS_PREFIX + key,
+            Expires: 5,
+            ResponseContentDisposition: 'attachment, filename="' + name + '"'
+        };
+
+        return s3.getSignedUrl('getObject', params);
+    }
 };

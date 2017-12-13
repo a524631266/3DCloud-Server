@@ -13,9 +13,9 @@ module.exports = function (db, io, aws) {
                 res.error('File not found', 404);
 
             try {
-                let data = await aws.getFile(file['_id']);
+                let url = aws.getPresignedDownloadUrl(file['_id'], file['name']);
 
-                res.header('Content-Disposition', util.format('attachment; filename="%s"', file['name'])).send(data.Body);
+                res.redirect(url);
             } catch (ex) {
                 res.exception(ex);
             }
