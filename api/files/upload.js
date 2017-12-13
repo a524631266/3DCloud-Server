@@ -22,7 +22,6 @@ module.exports = function (db, io, aws) {
                 let file = await db.addFile(key, name);
 
                 res.success(file);
-                io.namespaces.users.emit('file-uploaded', file);
             } catch (ex) {
                 global.logger.error(ex);
             }
