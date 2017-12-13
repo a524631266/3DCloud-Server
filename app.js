@@ -81,7 +81,7 @@ global.logger = require('tracer').colorConsole({
 
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
-    app.use(bodyParser.raw({ limit: '100mb', type: '*/*' }));
+    app.use(bodyParser.raw({ limit: '1000mb', type: '*/*' }));
 
     app.use(morgan((tokens, req, res) => {
         return [

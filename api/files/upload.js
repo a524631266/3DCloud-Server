@@ -17,14 +17,18 @@ module.exports = function (db, io, aws) {
             if (!req.body)
                 res.error('Body is empty');
 
+            res.success({'status': 'uploading', 'id': key});
+
             try {
                 global.logger.log(util.format('Uploading file to "uploads/%s"...', key));
 
-                await aws.uploadFile(key, req.body);
+                await aws.uploadFile(key, req.body, (loaded, total) => {
+                    io.namespaces.users.emit('file-upload-progress', { id: key, loaded: loaded, total: total });
+                });
 
                 let file = await db.addFile(key, name);
 
-                res.success(file);
+                io.namespaces.users.emit('file-uploaded', file);
             } catch (ex) {
                 res.exception(ex);
             }

@@ -197,7 +197,7 @@ module.exports.DB = class {
 
         let collection = this.db.collection('files');
 
-        return await collection.findOne({'_id': ObjectId(id)});
+        return await collection.findOne({'_id': id});
     }
 
     static async addFile(key, name) {
@@ -205,7 +205,7 @@ module.exports.DB = class {
 
         let collection = this.db.collection('files');
 
-        return collection.insertOne({'key': key, 'name': name, 'date_added': new Date()}).then(result => {
+        return collection.insertOne({'_id': key, 'name': name, 'date_added': new Date()}).then(result => {
             return result.ops[0];
         });
     }
@@ -215,7 +215,7 @@ module.exports.DB = class {
 
         let collection = this.db.collection('files');
 
-        return await collection.deleteOne({'_id': ObjectId(id)}).then(result => {
+        return await collection.deleteOne({'_id': id}).then(result => {
             return result.result.n === 1;
         }).catch(error => {
             global.logger.error(error);

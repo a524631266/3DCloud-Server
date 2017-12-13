@@ -8,7 +8,8 @@ module.exports = function (db, io, aws) {
 
                 try {
                     await db.deleteFile(file._id);
-                    await aws.deleteFile(file.key);
+                    await aws.deleteFile(file._id);
+
                     res.success();
                 } catch (ex) {
                     res.exception(ex);

@@ -6,7 +6,7 @@ let s3 = new AWS.S3({accessKeyId: config.aws.accessKeyId, secretAccessKey: confi
 const UPLOADS_PREFIX = 'uploads/';
 
 module.exports.AWSHelper = class {
-    static async uploadFile(key, body) {
+    static async uploadFile(key, body, progress) {
         let params = {
             Bucket: config.aws.bucket,
             Key: UPLOADS_PREFIX + key,
@@ -14,7 +14,8 @@ module.exports.AWSHelper = class {
         };
 
         let options = {
-            partSize: 1024 * 1024 * 10
+            queueSize: 1,
+            partSize: 1024 * 1024 * 5
         };
 
         return new Promise((resolve, reject) => {
@@ -24,7 +25,7 @@ module.exports.AWSHelper = class {
                 else
                     resolve(data);
             }).on('httpUploadProgress', (event) => {
-                console.log(event.loaded + '/' + event.total);
+                progress(event.loaded, event.total);
             });
         })
     }
