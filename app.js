@@ -33,12 +33,12 @@ global.logger = require('tracer').colorConsole({
 (async function () {
     global.logger.info('Starting 3DCloud Server');
 
-    await db.connect();
-
     server.listen(3000);
     server.on('listening', onListening);
 
     let io = require('./socket.js')(server, db);
+
+    await db.connect(io);
 
     app.use(function(req, res, next) {
         res.success = (data) => {

@@ -63,7 +63,7 @@ module.exports = (server, db) => {
             try {
                 await db.updatePrint(data['print_id'], data['status'], data['description']);
 
-                let send = {
+                /*let send = {
                     'print_id': data['print_id'],
                     'status': data['status'],
                     'description': data['description']
@@ -75,7 +75,7 @@ module.exports = (server, db) => {
                 if (['success', 'error', 'canceled'].includes(data['status']))
                     send['completed'] = new Date();
 
-                users.emit('print-status', send);
+                users.emit('print-status', send);*/
             } catch (ex) {
                 global.logger.error(ex);
             }

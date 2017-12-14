@@ -44,8 +44,7 @@ module.exports = function(db, io) {
                             await db.updatePrint(print['_id'], 'error');
                         }
                     } else {
-                        res.success();
-                        io.namespaces.users.emit('print-started', print);
+                        res.success(print);
                     }
                 });
             } catch (ex) {

@@ -7,7 +7,9 @@ const DATABASE_PORT = 27017;
 const DATABASE_NAME = '3dcloud';
 
 module.exports.DB = class {
-    static async connect() {
+    static async connect(io) {
+        this.io = io;
+
         global.logger.info(`Connecting to database at ${DATABASE_URL}:${DATABASE_PORT}/${DATABASE_NAME}...`);
 
         this.db = await MongoClient.connect('mongodb://' + DATABASE_URL + ':' + DATABASE_PORT + '/' + DATABASE_NAME);
@@ -314,7 +316,13 @@ module.exports.DB = class {
         if (['success', 'error', 'canceled'].includes(status))
             data['completed'] = new Date();
 
-        return await collection.updateOne({'_id': ObjectId(printId)}, {$set: data});
+        let result = await collection.updateOne({'_id': ObjectId(printId)}, {$set: data});
+
+        data['_id'] = printId;
+
+        this.io.namespaces.users.emit('print-updated', data);
+
+        return result;
     }
 
     static async deletePrint(printId) {

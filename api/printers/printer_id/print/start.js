@@ -35,10 +35,16 @@ module.exports = function(db, io) {
                         'key': file['_id'],
                         'name': file.name
                     }, async function (data) {
-                        res.json(data);
+                        if (data['success']) {
+                            res.success(print);
+                        } else if (data['error']) {
+                            res.exception(data['error']);
+                            await db.updatePrint(print['_id'], 'error', data['error']['message']);
+                        } else {
+                            res.error('Failed to start print');
+                            await db.updatePrint(print['_id'], 'error', 'Unknown error');
+                        }
                     });
-
-                    io.namespaces.users.emit('print-started', print);
                 } catch (ex) {
                     res.exception(ex);
                 }
