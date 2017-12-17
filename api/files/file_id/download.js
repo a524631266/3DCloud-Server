@@ -1,5 +1,3 @@
-let util = require('util');
-
 module.exports = function (db, io, aws) {
     return {
         route: '/files/:file_id/download',

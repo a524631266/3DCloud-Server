@@ -1,4 +1,4 @@
-module.exports = function(db, io) {
+module.exports = function(db) {
     return {
         route: '/printers/:printer_id/print/queue',
         method: 'get',

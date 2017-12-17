@@ -1,4 +1,4 @@
-module.exports = function (db, io) {
+module.exports = function (db) {
     return {
         route: '/files/:file_id',
         method: 'get',

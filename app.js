@@ -3,7 +3,7 @@ let express = require('express');
 let bodyParser = require('body-parser');
 let morgan = require('morgan');
 let cors = require('cors');
-let dateformat = require('dateformat');
+let dateFormat = require('dateformat');
 
 let db = require('./db').DB;
 let aws = require('./aws').AWSHelper;
@@ -84,7 +84,7 @@ global.logger = require('tracer').colorConsole({
 
     app.use(morgan((tokens, req, res) => {
         return [
-            dateformat('yyyy-mm-dd HH:MM:ss.l'),
+            dateFormat('yyyy-mm-dd HH:MM:ss.l'),
             '|   HTTP |',
             tokens.method(req, res),
             tokens.url(req, res),

@@ -1,4 +1,4 @@
-module.exports = function(db, io) {
+module.exports = function(db) {
     return {
         route: '/hosts/:host_id/printers',
         method: 'get',

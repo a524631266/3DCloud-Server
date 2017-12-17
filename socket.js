@@ -81,7 +81,7 @@ module.exports = (server, db) => {
             }
         });
 
-        client.on('reset', async (data) => {
+        client.on('reset', async () => {
             await db.resetHostPrints(hostId)
         });
 
