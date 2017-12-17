@@ -263,33 +263,15 @@ module.exports.DB = class {
     static async queuePrint(fileId, printerId) {
         global.logger.log(`Queueing print for file "${fileId}" on printer "${printerId}"`);
 
-        let print = await this.addPrint(fileId, printerId, 'queued');
-
-        let collection = this.db.collection('printers');
-
-        await collection.updateOne({'_id': printerId}, {$push: {'queue': print['_id']}});
-
-        return print;
+        return await this.addPrint(fileId, printerId, 'queued');
     }
 
     static async getNextQueuedPrint(printerId) {
         global.logger.log(`Fetching next print for printer "${printerId}"`);
 
-        let collection = this.db.collection('printers');
+        let collection = this.db.collection('prints');
 
-        let result = await collection.findOne({'_id': printerId});
-
-        await collection.updateOne({'_id': printerId}, {$pop: {'queue': -1}});
-
-        if (result['queue'] && result['queue'][0]) {
-            let id = result['queue'][0];
-
-            await this.updatePrint(id, 'pending');
-
-            return await this.getPrint(id);
-        }
-
-        return null;
+        return await collection.find({'printer_id': printerId, 'status': 'queued'}).sort({'created': 1}).limit(1).next();
     }
 
     static async setPrintPending(printId, hostId) {
