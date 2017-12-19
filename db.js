@@ -338,8 +338,10 @@ module.exports.DB = class {
             {
                 'host_id': hostId,
                 $or: [
+                    {'status': 'pending'},
+                    {'status': 'downloading'},
                     {'status': 'running'},
-                    {'status': 'pending'}
+                    {'status': 'canceling'}
                 ]
             }, {
                 $set: {
