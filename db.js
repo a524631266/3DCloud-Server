@@ -23,13 +23,7 @@ module.exports.DB = class {
 
         let collection = this.db.collection('hosts');
 
-        let hosts = await await collection.find().toArray();
-
-        for (let i = 0; i < hosts.length; i++) {
-            hosts[i]['printers'] = await this.getPrintersForHost(hosts[i]['_id']);
-        }
-
-        return hosts;
+        return await await collection.find().toArray();
     }
 
     static async getHost(id) {
