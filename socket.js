@@ -62,20 +62,6 @@ module.exports = (server, db) => {
 
             try {
                 await db.updatePrint(data['print_id'], data['status'], data['description']);
-
-                /*let send = {
-                    'print_id': data['print_id'],
-                    'status': data['status'],
-                    'description': data['description']
-                };
-
-                if (data['status'] === 'running')
-                    send['started'] = new Date();
-
-                if (['success', 'error', 'canceled'].includes(data['status']))
-                    send['completed'] = new Date();
-
-                users.emit('print-status', send);*/
             } catch (ex) {
                 global.logger.error(ex);
             }

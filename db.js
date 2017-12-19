@@ -37,10 +37,7 @@ module.exports.DB = class {
 
         let collection = this.db.collection('hosts');
 
-        let host = await collection.findOne({'_id': id});
-        host['printers'] = await this.getPrintersForHost(host['_id']);
-
-        return host;
+        return await collection.findOne({'_id': id});
     }
 
     static async hostExists(id) {
@@ -67,6 +64,23 @@ module.exports.DB = class {
         let collection = this.db.collection('hosts');
 
         return await collection.deleteOne({'_id': id});
+    }
+
+    static async updateHost(id, name) {
+        global.logger.log('Updating host with ID ' + id);
+
+        let collection = this.db.collection('hosts');
+
+        let data = {
+            '_id': id,
+            'name': name
+        };
+
+        let result =  await collection.updateOne({'_id': id}, {$set: data});
+
+        this.io.namespaces.users.emit('host-updated', data);
+
+        return result;
     }
 
     //endregion
