@@ -142,11 +142,19 @@ module.exports.DB = class {
     }
 
     static async getPrinter(id) {
-        global.logger.log('Fetching all printers');
+        global.logger.log('Fetching printer with ID ' + id);
 
         let collection = this.db.collection('printers');
 
         return await collection.findOne({'_id': id});
+    }
+
+    static async deletePrinter(id) {
+        global.logger.log('Deleting printer with ID ' + id);
+
+        let collection = this.db.collection('printers');
+
+        return await collection.deleteOne({'_id': id});
     }
 
     static async getPrintersForHost(hostId) {
@@ -162,19 +170,19 @@ module.exports.DB = class {
         });
     }
 
-    static async updatePrinter(id, name, driver) {
+    static async updatePrinter(id, name, type) {
         let collection = this.db.collection('printers');
 
         if (await this.printerExists(id)) {
             global.logger.log(util.format('Updating printer with ID "%s"', id));
 
-            return collection.updateOne({'_id': id}, {'name': name, 'driver': driver}).then((result) => {
+            return collection.updateOne({'_id': id}, {'name': name, 'type': type}).then((result) => {
                 return result.result.n === 1;
             });
         } else {
             global.logger.log(util.format('Inserting printer with ID "%s"', id));
 
-            return collection.insertOne({'_id': id, 'name': name, 'driver': driver}).then((result) => {
+            return collection.insertOne({'_id': id, 'name': name, 'type': type}).then((result) => {
                 return result.result.n === 1;
             });
         }
@@ -347,5 +355,31 @@ module.exports.DB = class {
         );
     }
 
+    //endregion
+
+    //region Printer Types
+    static async getPrinterTypes() {
+        global.logger.log('Fetching all printer types');
+
+        let collection = this.db.collection('printer_types');
+
+        return await collection.find().toArray();
+    }
+
+    static async addPrinterType(name, driver) {
+        global.logger.log(`Adding new printer type with name "${name}"`);
+
+        let collection = this.db.collection('printer_types');
+
+        return await collection.insertOne({'name': name, 'driver': driver});
+    }
+
+    static async getPrinterType(id) {
+        global.logger.log('Fetching all printer types');
+
+        let collection = this.db.collection('printer_types');
+
+        return await collection.findOne({'_id': ObjectId(id)});
+    }
     //endregion
 };

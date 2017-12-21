@@ -5,33 +5,40 @@ module.exports = function(db, io) {
         handler: async function(req, res) {
             let printerId = req.params['printer_id'];
             let name = req.body['name'];
-            let driver = req.body['driver'];
+            let typeId = req.body['type'];
 
-            if (!name)
+            console.log(typeId);
+
+            if (!name) {
                 res.error('A name must be specified');
+                return;
+            }
 
-            if (!driver)
-                res.error('A driver must be specified');
+            if (!typeId) {
+                res.error('A type ID must be specified');
+                return;
+            }
 
             global.logger.log('Updating printer with ID ' + printerId);
 
             try {
-                await db.updatePrinter(printerId, name, driver);
+                await db.updatePrinter(printerId, name, typeId);
 
+                let type = await db.getPrinterType(typeId);
                 let device = await db.getDevice(printerId);
 
                 // check if device exists and is currently connected
                 if (device && io.hosts[device['host_id']]) {
                     // emit device update
-                    io.hosts[device['host_id']].emit('printer_updated', { 'device_id': printerId, 'driver': driver }, function(data) {
-                        if (!data['success'])
+                    io.hosts[device['host_id']].emit('printer_updated', { 'device_id': printerId, 'driver': type.driver }, function(data) {
+                        if (!data['success'] && data['error']['type'] !== 'PrinterOfflineError')
                             res.exception(data['error']);
+                        else
+                            res.success();
                     });
                 } else {
                     global.logger.log('Printer is not currently connected, omitting printer update emit');
                 }
-
-                res.success();
             } catch (ex) {
                 res.exception(ex);
             }

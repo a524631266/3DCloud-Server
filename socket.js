@@ -39,10 +39,11 @@ module.exports = (server, db) => {
 
             if (await db.printerExists(data['device']['id'])) {
                 let printer = await db.getPrinter(data['device']['id']);
+                let printerType = await db.getPrinterType(printer['type']);
 
                 let send = {
                     'device_id': printer['_id'],
-                    'driver': printer['driver']
+                    'driver': printerType['driver']
                 };
 
                 client.emit('printer_updated', send, function (response) {
