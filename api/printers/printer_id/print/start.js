@@ -3,7 +3,7 @@ module.exports = function(db, io) {
         route: '/printers/:printer_id/print/start',
         method: 'get',
         handler: async function(req, res) {
-            global.logger.info('Sending print request');
+            Logger.info('Sending print request');
 
             let printerId = req.params['printer_id'];
             let fileId = req.query['id'];

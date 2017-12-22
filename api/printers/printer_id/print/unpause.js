@@ -3,7 +3,7 @@ module.exports = function(db, io) {
         route: '/printers/:printer_id/print/unpause',
         method: 'get',
         handler: async function(req, res) {
-            global.logger.info('Sending unpause request');
+            Logger.info('Sending unpause request');
 
             let device = await db.getDevice(req.params['printer_id']);
 

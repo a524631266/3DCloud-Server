@@ -6,7 +6,7 @@ module.exports = function (db, io, aws) {
         route: '/files/upload',
         method: 'put',
         handler: async function (req, res) {
-            global.logger.log('Got file upload request');
+            Logger.log('Got file upload request');
 
             let key = uniqid();
             let name = req.query['name'];
@@ -15,7 +15,7 @@ module.exports = function (db, io, aws) {
                 res.error('A name must be specified');
 
             try {
-                global.logger.log(util.format('Uploading file to "uploads/%s"...', key));
+                Logger.log(util.format('Uploading file to "uploads/%s"...', key));
 
                 await aws.uploadFile(key, req);
 
@@ -23,7 +23,7 @@ module.exports = function (db, io, aws) {
 
                 res.success(file);
             } catch (ex) {
-                global.logger.error(ex);
+                Logger.error(ex);
             }
         }
     }

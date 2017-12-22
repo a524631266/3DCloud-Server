@@ -3,7 +3,7 @@ module.exports = function (db, io, aws) {
         route: '/files/:file_id/download',
         method: 'get',
         handler: async function (req, res) {
-            global.logger.info('Got download request for file ' + req.params['file_id']);
+            Logger.info('Got download request for file ' + req.params['file_id']);
 
             let file = await db.getFile(req.params['file_id']);
 

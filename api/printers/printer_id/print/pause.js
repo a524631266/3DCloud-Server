@@ -3,7 +3,7 @@ module.exports = function(db, io) {
         route: '/printers/:printer_id/print/pause',
         method: 'get',
         handler: async function(req, res) {
-            global.logger.info('Sending pause request');
+            Logger.info('Sending pause request');
 
             let device = await db.getDevice(req.params['printer_id']);
 

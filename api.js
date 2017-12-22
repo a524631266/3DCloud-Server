@@ -3,7 +3,7 @@ let express = require('express');
 let util = require('util');
 
 module.exports = function(db, io, aws) {
-    global.logger.info('Loading API endpoints');
+    Logger.info('Loading API endpoints');
 
     let router = express.Router();
 
@@ -14,7 +14,7 @@ module.exports = function(db, io, aws) {
 
             if (typeof endpoint === 'function') {
                 let result = endpoint(db, io, aws);
-                global.logger.info(util.format('Adding %s handler for /api%s', result.method.toUpperCase(), result.route));
+                Logger.info(util.format('Adding %s handler for /api%s', result.method.toUpperCase(), result.route));
                 router[result.method](result.route, result.handler);
             } else {
                 addEndpoints(endpoint)
@@ -26,7 +26,7 @@ module.exports = function(db, io, aws) {
 
     addEndpoints(apiEndpoints);
 
-    global.logger.info('Done');
+    Logger.info('Done');
 
     return router;
 };

@@ -3,7 +3,7 @@ module.exports = function(db, io) {
         route: '/printers/:printer_id/print/cancel',
         method: 'get',
         handler: async function(req, res) {
-            global.logger.info('Sending cancel request');
+            Logger.info('Sending cancel request');
 
             let device = await db.getDevice(req.params['printer_id']);
 

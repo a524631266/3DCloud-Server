@@ -1,4 +1,5 @@
 import * as AWS from "aws-sdk";
+import { Logger } from "./logger";
 
 const config = require("./config");
 const s3 = new AWS.S3({
@@ -10,7 +11,7 @@ const s3 = new AWS.S3({
 const UPLOADS_PREFIX = "uploads/";
 
 export class AWSHelper {
-    public static async uploadFile(key, body, progress) {
+    public static async uploadFile(key, body) {
         const params = {
             Bucket: config.AWS_BUCKET,
             Key: UPLOADS_PREFIX + key,
@@ -29,14 +30,12 @@ export class AWSHelper {
                 } else {
                     resolve(data);
                 }
-            }).on("httpUploadProgress", (event) => {
-                progress(event.loaded, event.total);
             });
         });
     }
 
     public static async getFile(key) {
-        global.logger.info("Downloading file with key " + key);
+        Logger.info("Downloading file with key " + key);
 
         const params = {
             Bucket: config.AWS_BUCKET,
@@ -55,7 +54,7 @@ export class AWSHelper {
     }
 
     public static async deleteFile(key) {
-        global.logger.info("Deleting file with key " + key);
+        Logger.info("Deleting file with key " + key);
 
         const params = {
             Bucket: config.AWS_BUCKET,

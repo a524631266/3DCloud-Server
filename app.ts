@@ -1,3 +1,5 @@
+import { Logger } from "./logger";
+
 require("source-map-support").install();
 
 import * as bodyParser from "body-parser";
@@ -14,10 +16,8 @@ const config = require("./config");
 const app = express();
 const server = http.createServer(app);
 
-global.logger = console;
-
 (async () => {
-    global.logger.info("Starting 3DCloud Server");
+    Logger.info("Starting 3DCloud Server");
 
     server.listen(config.SERVER_PORT);
     server.on("listening", onListening);
@@ -33,7 +33,7 @@ global.logger = console;
         };
 
         res.error = (message, status = 500) => {
-            global.logger.error(message);
+            Logger.error(message);
 
             res.status(status).json({
                 success: false,
@@ -45,7 +45,7 @@ global.logger = console;
         };
 
         res.exception = (ex) => {
-            global.logger.error(ex);
+            Logger.error(ex);
 
             res.status(ex.status || 500).json({
                 success: false,
@@ -97,7 +97,7 @@ global.logger = console;
 
         res.exception(err);
 
-        global.logger.error(err);
+        Logger.error(err);
     });
 })();
 
@@ -107,5 +107,5 @@ function onListening() {
         ? "pipe " + addr
         : "port " + addr.port;
 
-    global.logger.info("Listening on " + bind);
+    Logger.info("Listening on " + bind);
 }

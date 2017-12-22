@@ -2,13 +2,14 @@ import { DB } from "./db";
 
 import * as http from "http";
 import * as SocketIO from "socket.io";
+import { Logger } from "./logger";
 
 export class Socket {
     private usersNamespace: SocketIO.Namespace;
     private hostsNamespace: SocketIO.Namespace;
 
     public constructor(server: http.Server, db: DB) {
-        global.logger.info("Initializing socket...");
+        Logger.info("Initializing socket...");
 
         const io = SocketIO(server);
         const hosts =  {};
@@ -19,14 +20,14 @@ export class Socket {
         this.usersNamespace = io.of("/users");
 
         this.usersNamespace.on("connection", async (client) => {
-            global.logger.info(`Client ${client.id} connected to users channel`);
+            Logger.info(`Client ${client.id} connected to users channel`);
         });
 
         this.hostsNamespace.on("connection", async (client) => {
             const hostId = client.handshake.query.host_id;
 
             if (!hostId) {
-                global.logger.error("Client attempted to connect to hosts namespace without host ID");
+                Logger.error("Client attempted to connect to hosts namespace without host ID");
                 client.disconnect();
             }
 
@@ -36,12 +37,14 @@ export class Socket {
                 await db.addHost(hostId);
             }
 
-            global.logger.info(`Client ${client.id} (host ID ${hostId}) connected to hosts namespace`);
+            Logger.info(`Client ${client.id} (host ID ${hostId}) connected to hosts namespace`);
 
             client.on("printer", async (data) => {
-                global.logger.info("Received request for printer with ID " + data.device.id);
+                Logger.info("Received request for printer with ID " + data.device.id);
 
                 devices[data.device.id] = hostId;
+
+                await db.updateDevice(data.device.id, hostId);
 
                 this.usersNamespace.emit("device_updated", data.device); // TODO: actual structure
 
@@ -55,7 +58,7 @@ export class Socket {
                     };
 
                     client.emit("printer_updated", send, (response) => {
-                        global.logger.log("printer_updated response: " + JSON.stringify(response));
+                        Logger.log("printer_updated response: " + JSON.stringify(response));
 
                         this.usersNamespace.emit("printer_updated", printer);
                     });
@@ -67,12 +70,12 @@ export class Socket {
             });
 
             client.on("print-status", async (data) => {
-                global.logger.log(data);
+                Logger.log(data);
 
                 try {
                     await db.updatePrint(data.print_id, data.status, data.description);
                 } catch (ex) {
-                    global.logger.error(ex);
+                    Logger.error(ex);
                 }
             });
 
@@ -87,15 +90,15 @@ export class Socket {
         });
 
         io.on("connection", async (client) =>  {
-            global.logger.info(`Client ${client.id} connected`);
+            Logger.info(`Client ${client.id} connected`);
 
             client.on("disconnect", async () => {
-                global.logger.info(`Client ${client.id} disconnected`);
+                Logger.info(`Client ${client.id} disconnected`);
             });
         });
 
         const statusUpdate = () => {
-            global.logger.debug("Emitting status");
+            Logger.debug("Emitting status");
 
             this.usersNamespace.emit("status", statuses);
 
@@ -104,7 +107,7 @@ export class Socket {
 
         statusUpdate();
 
-        global.logger.info("Socket initialized");
+        Logger.info("Socket initialized");
     }
 
     public emitToHosts(event: string | symbol, ...args: any[]): void {

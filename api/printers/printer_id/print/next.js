@@ -3,7 +3,7 @@ module.exports = function(db, io) {
         route: '/printers/:printer_id/print/next',
         method: 'get',
         handler: async function(req, res) {
-            global.logger.info('Adding print to queue');
+            Logger.info('Adding print to queue');
 
             let printerId = req.params['printer_id'];
             let hostId = null;
@@ -36,11 +36,11 @@ module.exports = function(db, io) {
                     if (!data['success']) {
                         if (data['error'] && data['error']['message']) {
                             res.exception(data['error']);
-                            global.logger.error('Failed to start print: ' + data['error']['message']);
+                            Logger.error('Failed to start print: ' + data['error']['message']);
                             await db.updatePrint(print['_id'], 'error', data['error']['message']);
                         } else {
                             res.error('Failed to start print');
-                            global.logger.error('Failed to start print');
+                            Logger.error('Failed to start print');
                             await db.updatePrint(print['_id'], 'error');
                         }
                     } else {

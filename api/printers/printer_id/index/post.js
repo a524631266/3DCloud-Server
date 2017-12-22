@@ -19,7 +19,7 @@ module.exports = function(db, io) {
                 return;
             }
 
-            global.logger.log('Updating printer with ID ' + printerId);
+            Logger.log('Updating printer with ID ' + printerId);
 
             try {
                 await db.updatePrinter(printerId, name, typeId);
@@ -37,7 +37,7 @@ module.exports = function(db, io) {
                             res.success();
                     });
                 } else {
-                    global.logger.log('Printer is not currently connected, omitting printer update emit');
+                    Logger.log('Printer is not currently connected, omitting printer update emit');
                 }
             } catch (ex) {
                 res.exception(ex);

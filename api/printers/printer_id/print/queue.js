@@ -3,7 +3,7 @@ module.exports = function(db) {
         route: '/printers/:printer_id/print/queue',
         method: 'get',
         handler: async function(req, res) {
-            global.logger.info('Adding print to queue');
+            Logger.info('Adding print to queue');
 
             let printerId = req.params['printer_id'];
             let fileId = req.query['id'];
