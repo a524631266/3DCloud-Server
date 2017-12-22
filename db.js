@@ -1,385 +1,342 @@
-let MongoClient = require('mongodb').MongoClient;
-let ObjectId = require('mongodb').ObjectId;
-let util = require('util');
-
-const DATABASE_URL = 'localhost';
-const DATABASE_PORT = 27017;
-const DATABASE_NAME = '3dcloud';
-
-module.exports.DB = class {
-    static async connect(io) {
-        this.io = io;
-
-        global.logger.info(`Connecting to database at ${DATABASE_URL}:${DATABASE_PORT}/${DATABASE_NAME}...`);
-
-        this.db = await MongoClient.connect('mongodb://' + DATABASE_URL + ':' + DATABASE_PORT + '/' + DATABASE_NAME);
-
-        global.logger.info('Successfully connected.');
-    }
-
-    //region Hosts
-    static async getHosts() {
-        global.logger.log('Fetching all hosts');
-
-        let collection = this.db.collection('hosts');
-
-        return await await collection.find().toArray();
-    }
-
-    static async getHost(id) {
-        global.logger.log(util.format('Fetching host with ID "%s"', id));
-
-        let collection = this.db.collection('hosts');
-
-        return await collection.findOne({'_id': id});
-    }
-
-    static async hostExists(id) {
-        global.logger.log(util.format('Checking if host with ID "%s" exists', id));
-
-        return await this.getHost(id) !== null;
-    }
-
-    static async addHost(id) {
-        global.logger.log('Adding host with ID ' + id);
-
-        let name = 'Machine ' + id;
-
-        let collection = this.db.collection('hosts');
-
-        return await collection.insertOne({'_id': id, 'name': name}).then(result => {
-            return result.result.n === 1;
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongodb_1 = require("mongodb");
+const config = require("./config");
+class DB {
+    connect() {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.info(`Connecting to database at
+                            ${config.DATABASE_URL}:${config.DATABASE_PORT}/${config.DATABASE_NAME}...`);
+            this.db = yield mongodb_1.MongoClient.connect("mongodb://" + config.DATABASE_URL + ":" + config.DATABASE_PORT + "/" + config.DATABASE_NAME);
+            global.logger.info("Successfully connected.");
         });
     }
-
-    static async deleteHost(id) {
-        global.logger.log('Deleting host with ID ' + id);
-
-        let collection = this.db.collection('hosts');
-
-        return await collection.deleteOne({'_id': id});
+    // region Hosts
+    getHosts() {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Fetching all hosts");
+            const collection = this.db.collection("hosts");
+            return yield yield collection.find().toArray();
+        });
     }
-
-    static async updateHost(id, name) {
-        global.logger.log('Updating host with ID ' + id);
-
-        let collection = this.db.collection('hosts');
-
-        let data = {
-            '_id': id,
-            'name': name
-        };
-
-        let result =  await collection.updateOne({'_id': id}, {$set: data});
-
-        this.io.namespaces.users.emit('host-updated', data);
-
-        return result;
+    getHost(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`'Fetching host with ID "${id}"`);
+            const collection = this.db.collection("hosts");
+            return yield collection.findOne({ _id: id });
+        });
     }
-
-    //endregion
-
-    //region Devices
-    static async getDevice(id) {
-        global.logger.log(util.format('Fetching device with ID "%s"', id));
-
-        let collection = this.db.collection('devices');
-
-        return await collection.findOne({'_id': id});
+    hostExists(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`Checking if host with ID "${id}" exists`);
+            return (yield this.getHost(id)) !== null;
+        });
     }
-
-    static async getDevices() {
-        global.logger.log('Fetching all devices');
-
-        let collection = this.db.collection('devices');
-
-        return await collection.find().toArray();
-    }
-
-    static async deviceExists(id) {
-        global.logger.log(util.format('Checking if device with ID "%s" exists', id));
-
-        return await this.getDevice(id) !== null;
-    }
-
-    static async updateDevice(id, hostId) {
-        let collection = this.db.collection('devices');
-
-        if (await this.deviceExists(id)) {
-            global.logger.log(util.format('Updating device with ID "%s"', id));
-
-            return await collection.updateOne({'_id': id}, {'host_id': hostId}).then((result) => {
+    addHost(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Adding host with ID " + id);
+            const name = "Machine " + id;
+            const collection = this.db.collection("hosts");
+            return yield collection.insertOne({ _id: id, name: name }).then((result) => {
                 return result.result.n === 1;
             });
-        } else {
-            global.logger.log(util.format('Inserting device with ID "%s"', id));
-
-            return await collection.insertOne({'_id': id, 'host_id': hostId}).then((result) => {
+        });
+    }
+    deleteHost(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Deleting host with ID " + id);
+            const collection = this.db.collection("hosts");
+            return yield collection.deleteOne({ _id: id });
+        });
+    }
+    updateHost(id, name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Updating host with ID " + id);
+            const collection = this.db.collection("hosts");
+            const data = {
+                _id: id,
+                name: name
+            };
+            const result = yield collection.updateOne({ _id: id }, { $set: data });
+            return result;
+        });
+    }
+    // endregion
+    // region Devices
+    getDevice(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`Fetching device with ID "${id}"`);
+            const collection = this.db.collection("devices");
+            return yield collection.findOne({ _id: id });
+        });
+    }
+    getDevices() {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Fetching all devices");
+            const collection = this.db.collection("devices");
+            return yield collection.find().toArray();
+        });
+    }
+    deviceExists(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`Checking if device with ID "${id}" exists`);
+            return (yield this.getDevice(id)) !== null;
+        });
+    }
+    updateDevice(id, hostId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const collection = this.db.collection("devices");
+            if (yield this.deviceExists(id)) {
+                global.logger.log(`Updating device with ID "%${id}"`);
+                return yield collection.updateOne({ _id: id }, { host_id: hostId }).then((result) => {
+                    return result.result.n === 1;
+                });
+            }
+            else {
+                global.logger.log(`Inserting device with ID "${id}"`);
+                return yield collection.insertOne({ _id: id, host_id: hostId }).then((result) => {
+                    return result.result.n === 1;
+                });
+            }
+        });
+    }
+    deleteDevice(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`Removing device with ID "${id}"`);
+            const collection = this.db.collection("devices");
+            return yield collection.deleteOne({ _id: id }).then((result) => {
                 return result.result.n === 1;
             });
-        }
-    }
-
-    static async deleteDevice(id) {
-        global.logger.log(util.format('Removing device with ID "%s"', id));
-
-        let collection = this.db.collection('devices');
-
-        return await collection.deleteOne({'_id': id}).then((result) => {
-            return result.result.n === 1
         });
     }
-
-    //endregion
-
-    //region Printers
-    static async getPrinters() {
-        global.logger.log('Fetching all printers');
-
-        let collection = this.db.collection('printers');
-
-        return await collection.find().toArray();
-    }
-
-    static async getPrinter(id) {
-        global.logger.log('Fetching printer with ID ' + id);
-
-        let collection = this.db.collection('printers');
-
-        return await collection.findOne({'_id': id});
-    }
-
-    static async deletePrinter(id) {
-        global.logger.log('Deleting printer with ID ' + id);
-
-        let collection = this.db.collection('printers');
-
-        return await collection.deleteOne({'_id': id});
-    }
-
-    static async getPrintersForHost(hostId) {
-        let devicesCollection = this.db.collection('devices');
-        let printersCollection = this.db.collection('printers');
-
-        let devices = await devicesCollection.find({'host_id': hostId}).toArray().then(devices => {
-            return devices.map(d => d['_id']);
-        });
-
-        return await printersCollection.find().toArray().then(printers => {
-            return printers.filter(p => devices.includes(p['_id']));
+    // endregion
+    // region Printers
+    getPrinters() {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Fetching all printers");
+            const collection = this.db.collection("printers");
+            return yield collection.find().toArray();
         });
     }
-
-    static async updatePrinter(id, name, type) {
-        let collection = this.db.collection('printers');
-
-        if (await this.printerExists(id)) {
-            global.logger.log(util.format('Updating printer with ID "%s"', id));
-
-            return collection.updateOne({'_id': id}, {'name': name, 'type': type}).then((result) => {
-                return result.result.n === 1;
+    getPrinter(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Fetching printer with ID " + id);
+            const collection = this.db.collection("printers");
+            return yield collection.findOne({ _id: id });
+        });
+    }
+    deletePrinter(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Deleting printer with ID " + id);
+            const collection = this.db.collection("printers");
+            return yield collection.deleteOne({ _id: id });
+        });
+    }
+    getPrintersForHost(hostId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const devicesCollection = this.db.collection("devices");
+            const printersCollection = this.db.collection("printers");
+            const devices = yield devicesCollection.find({ host_id: hostId }).toArray().then((devices) => {
+                return devices.map((d) => d._id);
             });
-        } else {
-            global.logger.log(util.format('Inserting printer with ID "%s"', id));
-
-            return collection.insertOne({'_id': id, 'name': name, 'type': type}).then((result) => {
-                return result.result.n === 1;
+            return yield printersCollection.find().toArray().then((printers) => {
+                return printers.filter((p) => devices.indexOf(p._id) > -1);
             });
-        }
-    }
-
-    static async printerExists(id) {
-        global.logger.log(util.format('Checking if printer with ID "%s" exists', id));
-
-        return await this.getPrinter(id) !== null;
-    }
-
-    //endregion
-
-    //region Files
-    static async getFiles() {
-        global.logger.log('Fetching all files from database');
-
-        let collection = this.db.collection('files');
-
-        return await collection.find().toArray();
-    }
-
-    static async getFile(id) {
-        global.logger.log(util.format('Fetching file with ID "%s"', id));
-
-        let collection = this.db.collection('files');
-
-        return await collection.findOne({'_id': id});
-    }
-
-    static async addFile(key, name) {
-        global.logger.log(util.format('Adding file "%s" (%s) to database', name, key));
-
-        let collection = this.db.collection('files');
-
-        return collection.insertOne({'_id': key, 'name': name, 'date_added': new Date()}).then(result => {
-            return result.ops[0];
         });
     }
-
-    static async deleteFile(id) {
-        global.logger.log('Deleting file with ID ' + id);
-
-        let collection = this.db.collection('files');
-
-        return await collection.deleteOne({'_id': id}).then(result => {
-            return result.result.n === 1;
-        }).catch(error => {
-            global.logger.error(error);
-            return false;
+    updatePrinter(id, name, type) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const collection = this.db.collection("printers");
+            if (yield this.printerExists(id)) {
+                global.logger.log(`Updating printer with ID "${id}"`);
+                return collection.updateOne({ _id: id }, { name: name, type: type }).then((result) => {
+                    return result.result.n === 1;
+                });
+            }
+            else {
+                global.logger.log(`Inserting printer with ID "${id}"`);
+                return collection.insertOne({ _id: id, name: name, type: type }).then((result) => {
+                    return result.result.n === 1;
+                });
+            }
         });
     }
-
-    //endregion
-
-    //region Prints
-    static async getPrints() {
-        global.logger.log('Fetching all prints');
-
-        let collection = this.db.collection('prints');
-
-        return await collection.find().toArray();
-    }
-
-    static async getPrint(id) {
-        global.logger.log('Fetching print with ID ' + id);
-
-        let collection = this.db.collection('prints');
-
-        return await collection.findOne({'_id': ObjectId(id)});
-    }
-
-    static async addPrint(fileId, printerId, status = 'pending', hostId = null) {
-        global.logger.log(util.format('Adding print for "%s" on "%s"', fileId, printerId));
-
-        let collection = this.db.collection('prints');
-
-        let file = await this.getFile(fileId);
-        let printer = await this.getPrinter(printerId);
-
-        return await collection.insertOne({
-            file_id: fileId,
-            file_name: file.name,
-            printer_id: printerId,
-            printer_name: printer.name,
-            created: new Date(),
-            status: status,
-            host_id: hostId
-        }).then(result => {
-            return result.ops[0];
+    printerExists(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`Checking if printer with ID "${id}" exists`);
+            return (yield this.getPrinter(id)) !== null;
         });
     }
-
-    static async queuePrint(fileId, printerId) {
-        global.logger.log(`Queueing print for file "${fileId}" on printer "${printerId}"`);
-
-        return await this.addPrint(fileId, printerId, 'queued');
+    // endregion
+    // region Files
+    getFiles() {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Fetching all files from database");
+            const collection = this.db.collection("files");
+            return yield collection.find().toArray();
+        });
     }
-
-    static async getNextQueuedPrint(printerId) {
-        global.logger.log(`Fetching next print for printer "${printerId}"`);
-
-        let collection = this.db.collection('prints');
-
-        return await collection.find({'printer_id': printerId, 'status': 'queued'}).sort({'created': 1}).limit(1).next();
+    getFile(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`Fetching file with ID "${id}"`);
+            const collection = this.db.collection("files");
+            return yield collection.findOne({ _id: id });
+        });
     }
-
-    static async setPrintPending(printId, hostId) {
-        global.logger.log(util.format('Setting print "%s" as pending', printId));
-
-        let collection = this.db.collection('prints');
-
-        return await collection.updateOne({'_id': ObjectId(printId)}, {$set: {'status': 'pending', 'host_id': hostId}});
+    addFile(key, name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`Adding file "${key}" (${name}) to database`);
+            const collection = this.db.collection("files");
+            return collection.insertOne({ _id: key, name: name, date_added: new Date() }).then((result) => {
+                return result.ops[0];
+            });
+        });
     }
-
-    static async updatePrint(printId, status, description = null) {
-        global.logger.log(util.format('Updating print "%s" to status "%s"', printId, status));
-
-        let collection = this.db.collection('prints');
-
-        let data = {
-            'status': status,
-            'description': description
-        };
-
-        if (status === 'running')
-            data['started'] = new Date();
-
-        if (['success', 'error', 'canceled'].includes(status))
-            data['completed'] = new Date();
-
-        let result = await collection.updateOne({'_id': ObjectId(printId)}, {$set: data});
-
-        data['_id'] = printId;
-
-        this.io.namespaces.users.emit('print-updated', data);
-
-        return result;
+    deleteFile(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Deleting file with ID " + id);
+            const collection = this.db.collection("files");
+            return yield collection.deleteOne({ _id: id }).then((result) => {
+                return result.result.n === 1;
+            }).catch((error) => {
+                global.logger.error(error);
+                return false;
+            });
+        });
     }
-
-    static async deletePrint(printId) {
-        global.logger.log(util.format('Deleting print "%s"', printId));
-
-        let collection = this.db.collection('prints');
-
-        return await collection.deleteOne({'_id': ObjectId(printId)});
+    // endregion
+    // region Prints
+    getPrints() {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Fetching all prints");
+            const collection = this.db.collection("prints");
+            return yield collection.find().toArray();
+        });
     }
-
-    static async resetHostPrints(hostId) {
-        global.logger.log('Resetting printers for host ' + hostId);
-
-        let collection = this.db.collection('prints');
-
-        await collection.updateMany(
-            {
-                'host_id': hostId,
+    getPrint(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Fetching print with ID " + id);
+            const collection = this.db.collection("prints");
+            return yield collection.findOne({ _id: new mongodb_1.ObjectID(id) });
+        });
+    }
+    addPrint(fileId, printerId, status = "pending", hostId = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`'Adding print for "${fileId}" on "${printerId}"'`);
+            const collection = this.db.collection("prints");
+            const file = yield this.getFile(fileId);
+            const printer = yield this.getPrinter(printerId);
+            return yield collection.insertOne({
+                file_id: fileId,
+                file_name: file.name,
+                printer_id: printerId,
+                printer_name: printer.name,
+                created: new Date(),
+                status: status,
+                host_id: hostId
+            }).then((result) => {
+                return result.ops[0];
+            });
+        });
+    }
+    queuePrint(fileId, printerId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`Queueing print for file "${fileId}" on printer "${printerId}"`);
+            return yield this.addPrint(fileId, printerId, "queued");
+        });
+    }
+    getNextQueuedPrint(printerId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`Fetching next print for printer "${printerId}"`);
+            const collection = this.db.collection("prints");
+            return yield collection.find({ printer_id: printerId, status: "queued" }).sort({ created: 1 }).limit(1).next();
+        });
+    }
+    setPrintPending(printId, hostId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`Setting print "${printId}" as pending`);
+            const collection = this.db.collection("prints");
+            return yield collection.updateOne({ _id: new mongodb_1.ObjectID(printId) }, { $set: { status: "pending", host_id: hostId } });
+        });
+    }
+    updatePrint(printId, status, description = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`Updating print "${printId}" to status "${status}"`);
+            const collection = this.db.collection("prints");
+            const data = {
+                status: status,
+                description: description
+            };
+            if (status === "running") {
+                data["started"] = new Date();
+            }
+            if (["success", "error", "canceled"].indexOf(status) > -1) {
+                data["completed"] = new Date();
+            }
+            const result = yield collection.updateOne({ _id: new mongodb_1.ObjectID(printId) }, { $set: data });
+            data["_id"] = printId;
+            return result;
+        });
+    }
+    deletePrint(printId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`Deleting print "${printId}"`);
+            const collection = this.db.collection("prints");
+            return yield collection.deleteOne({ _id: new mongodb_1.ObjectID(printId) });
+        });
+    }
+    resetHostPrints(hostId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Resetting printers for host " + hostId);
+            const collection = this.db.collection("prints");
+            yield collection.updateMany({
+                host_id: hostId,
                 $or: [
-                    {'status': 'pending'},
-                    {'status': 'downloading'},
-                    {'status': 'running'},
-                    {'status': 'canceling'}
+                    { status: "pending" },
+                    { status: "downloading" },
+                    { status: "running" },
+                    { status: "canceling" }
                 ]
             }, {
                 $set: {
-                    'status': 'error',
-                    'description': 'Host lost power',
-                    'completed': new Date()
+                    status: "error",
+                    description: "Host lost power",
+                    completed: new Date()
                 }
-            }
-        );
+            });
+        });
     }
-
-    //endregion
-
-    //region Printer Types
-    static async getPrinterTypes() {
-        global.logger.log('Fetching all printer types');
-
-        let collection = this.db.collection('printer_types');
-
-        return await collection.find().toArray();
+    // endregion
+    // region Printer Types
+    getPrinterTypes() {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Fetching all printer types");
+            const collection = this.db.collection("printer_types");
+            return yield collection.find().toArray();
+        });
     }
-
-    static async addPrinterType(name, driver) {
-        global.logger.log(`Adding new printer type with name "${name}"`);
-
-        let collection = this.db.collection('printer_types');
-
-        return await collection.insertOne({'name': name, 'driver': driver});
+    addPrinterType(name, driver) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log(`Adding new printer type with name "${name}"`);
+            const collection = this.db.collection("printer_types");
+            return yield collection.insertOne({ name: name, driver: driver });
+        });
     }
-
-    static async getPrinterType(id) {
-        global.logger.log('Fetching all printer types');
-
-        let collection = this.db.collection('printer_types');
-
-        return await collection.findOne({'_id': ObjectId(id)});
+    getPrinterType(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            global.logger.log("Fetching all printer types");
+            const collection = this.db.collection("printer_types");
+            return yield collection.findOne({ _id: new mongodb_1.ObjectID(id) });
+        });
     }
-    //endregion
-};
+}
+exports.DB = DB;
+//# sourceMappingURL=db.js.map

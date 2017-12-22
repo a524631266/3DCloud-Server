@@ -1,30 +1,29 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
 require("source-map-support").install();
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const dateFormat = require("dateformat");
-const express = require("express");
-const http = require("http");
-const morgan = require("morgan");
-const manager_1 = require("./manager");
+
+import * as bodyParser from "body-parser";
+import * as cors from "cors";
+import * as dateFormat from "dateformat";
+import * as express from "express";
+import * as http from "http";
+import * as morgan from "morgan";
+
+import { Manager } from "./manager";
+
 const config = require("./config");
+
 const app = express();
 const server = http.createServer(app);
+
 global.logger = console;
-(() => __awaiter(this, void 0, void 0, function* () {
+
+(async () => {
     global.logger.info("Starting 3DCloud Server");
+
     server.listen(config.SERVER_PORT);
     server.on("listening", onListening);
-    const manager = new manager_1.Manager(server);
+
+    const manager = new Manager(server);
+
     app.use((req, res, next) => {
         res.success = (data) => {
             res.json({
@@ -32,8 +31,10 @@ global.logger = console;
                 success: true
             });
         };
+
         res.error = (message, status = 500) => {
             global.logger.error(message);
+
             res.status(status).json({
                 success: false,
                 error: {
@@ -42,8 +43,10 @@ global.logger = console;
                 }
             });
         };
+
         res.exception = (ex) => {
             global.logger.error(ex);
+
             res.status(ex.status || 500).json({
                 success: false,
                 error: {
@@ -54,11 +57,15 @@ global.logger = console;
                 },
             });
         };
+
         next();
     });
+
     app.use(cors());
-    app.use(bodyParser.urlencoded({ extended: true }));
+
+    app.use(bodyParser.urlencoded({extended: true}));
     app.use(bodyParser.json());
+
     app.use(morgan((tokens, req, res) => {
         return [
             dateFormat("yyyy-mm-dd HH:MM:ss.l"),
@@ -72,27 +79,33 @@ global.logger = console;
             tokens["response-time"](req, res), "ms",
         ].join(" ");
     }));
+
     app.use("/api", require("./api.js")(manager));
+
     // catch 404 and forward to error handler
     app.use((req, res, next) => {
         const err = new Error("Cannot " + req.method + " " + req.url);
         next(err);
     });
+
     // error handler
     // noinspection JSUnusedLocalSymbols
     app.use((err, req, res, next) => {
         // set locals, only providing error in development
         res.locals.message = err.message;
         res.locals.error = req.app.get("env") === "development" ? err : {};
+
         res.exception(err);
+
         global.logger.error(err);
     });
-}))();
+})();
+
 function onListening() {
     const addr = server.address();
     const bind = typeof addr === "string"
         ? "pipe " + addr
         : "port " + addr.port;
+
     global.logger.info("Listening on " + bind);
 }
-//# sourceMappingURL=app.js.map
