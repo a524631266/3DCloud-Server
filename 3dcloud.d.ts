@@ -1,3 +1,4 @@
+/* tslint:disable */
 declare module NodeJS {
     interface Global {
         logger: any;
