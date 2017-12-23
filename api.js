@@ -1,32 +1,33 @@
-let requireDirectory = require('require-directory');
-let express = require('express');
-let util = require('util');
-
-module.exports = function(db, io, aws) {
-    Logger.info('Loading API endpoints');
-
-    let router = express.Router();
-
-    function addEndpoints(endpoints) {
-        for (let name in endpoints) {
-            // noinspection JSUnfilteredForInLoop
-            let endpoint = endpoints[name];
-
-            if (typeof endpoint === 'function') {
-                let result = endpoint(db, io, aws);
-                Logger.info(util.format('Adding %s handler for /api%s', result.method.toUpperCase(), result.route));
-                router[result.method](result.route, result.handler);
-            } else {
-                addEndpoints(endpoint)
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express = require("express");
+const requireDirectory = require("require-directory");
+const logger_1 = require("./logger");
+const stuff = require("./api");
+class Api {
+    static init(manager) {
+        logger_1.Logger.info(JSON.stringify(stuff));
+        logger_1.Logger.info('Loading API endpoints');
+        let router = express.Router();
+        function addEndpoints(endpoints) {
+            for (let name in endpoints) {
+                // noinspection JSUnfilteredForInLoop
+                let endpoint = endpoints[name];
+                if (typeof endpoint === 'function') {
+                    let result = endpoint(manager);
+                    logger_1.Logger.info(`Adding ${result.method.toUpperCase()} handler for /api${result.route}`);
+                    router[result.method](result.route, result.handler);
+                }
+                else {
+                    addEndpoints(endpoint);
+                }
             }
         }
+        let apiEndpoints = requireDirectory(module, './api');
+        addEndpoints(apiEndpoints);
+        logger_1.Logger.info('Done');
+        return router;
     }
-
-    let apiEndpoints = requireDirectory(module, './api');
-
-    addEndpoints(apiEndpoints);
-
-    Logger.info('Done');
-
-    return router;
-};
+}
+exports.Api = Api;
+//# sourceMappingURL=api.js.map

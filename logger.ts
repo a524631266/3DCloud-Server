@@ -2,32 +2,41 @@ import * as dateFormat from "dateformat";
 import * as path from "path";
 
 export class Logger {
-    public static log(message: string) {
-        this.write(message, "LOG", 37);
-    }
+    public static level: LogLevel;
 
     public static trace(message: string) {
-        this.write(message, "TRACE", 37);
+        if (this.level >= LogLevel.TRACE)
+            this.write(message, "TRACE", 37);
+    }
+
+    public static log(message: string) {
+        if (this.level >= LogLevel.LOG)
+            this.write(message, "LOG", 37);
     }
 
     public static debug(message: string) {
-        this.write(message, "DEBUG", 34);
+        if (this.level >= LogLevel.DEBUG)
+            this.write(message, "DEBUG", 34);
     }
 
     public static info(message: string) {
-        this.write(message, "INFO", 32);
+        if (this.level >= LogLevel.INFO || !this.level)
+            this.write(message, "INFO", 32);
     }
 
     public static warn(message: string) {
-        this.write(message, "WARN", 33);
+        if (this.level >= LogLevel.WARN || !this.level)
+            this.write(message, "WARN", 33);
     }
 
     public static error(message: string) {
-        this.write(message, "ERROR", 31);
+        if (this.level >= LogLevel.ERROR || !this.level)
+            this.write(message, "ERROR", 31);
     }
 
     public static fatal(message: string) {
-        this.write(message, "FATAL", 31);
+        if (this.level >= LogLevel.FATAL || !this.level)
+            this.write(message, "FATAL", 31);
     }
 
     private static stackReg = /at\s+(.*)\s+\((.*):(\d*):(\d*)\)/i;
@@ -54,4 +63,14 @@ export class Logger {
 
         return result + str;
     }
+}
+
+export enum LogLevel {
+    TRACE = 0,
+    LOG = 1,
+    DEBUG = 2,
+    INFO = 3,
+    WARN = 4,
+    ERROR = 5,
+    FATAL = 6
 }

@@ -16,7 +16,7 @@
     "@types/require-directory": "^2.1.0",
     "@types/socket.io": "^1.4.31",
     "@types/uniqid": "^4.1.2",
-    "aws-sdk": "^2.174.0",
+    "aws-sdk": "^2.175.0",
     "body-parser": "~1.18.2",
     "colors": "^1.1.2",
     "cookie-parser": "~1.4.3",

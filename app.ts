@@ -1,5 +1,3 @@
-import { Logger } from "./logger";
-
 require("source-map-support").install();
 
 import * as bodyParser from "body-parser";
@@ -10,6 +8,9 @@ import * as http from "http";
 import * as morgan from "morgan";
 
 import { Manager } from "./manager";
+import { Request, Response } from "express";
+import { Api } from "./api";
+import { Logger } from "./logger";
 
 const config = require("./config");
 
@@ -24,15 +25,15 @@ const server = http.createServer(app);
 
     const manager = new Manager(server);
 
-    app.use((req, res, next) => {
-        res.success = (data) => {
+    app.use((req: Request, res: Response, next) => {
+        res.success = (data: any) => {
             res.json({
                 data: data,
                 success: true
             });
         };
 
-        res.error = (message, status = 500) => {
+        res.error = (message: string, status: number = 500) => {
             Logger.error(message);
 
             res.status(status).json({
@@ -74,13 +75,13 @@ const server = http.createServer(app);
             tokens.url(req, res),
             tokens.status(req, res),
             "-",
-            tokens.res(req, res, "content-length") || "none",
+            tokens.res(req, res, "content-length"),
             "-",
             tokens["response-time"](req, res), "ms",
         ].join(" ");
     }));
 
-    app.use("/api", require("./api.js")(manager));
+    app.use("/api", Api.init(manager));
 
     // catch 404 and forward to error handler
     app.use((req, res, next) => {
