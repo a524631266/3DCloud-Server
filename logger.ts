@@ -5,37 +5,37 @@ export class Logger {
     public static level: LogLevel;
 
     public static trace(message: string) {
-        if (this.level >= LogLevel.TRACE)
+        if (this.level <= LogLevel.TRACE)
             this.write(message, "TRACE", 37);
     }
 
     public static log(message: string) {
-        if (this.level >= LogLevel.LOG)
+        if (this.level <= LogLevel.LOG)
             this.write(message, "LOG", 37);
     }
 
     public static debug(message: string) {
-        if (this.level >= LogLevel.DEBUG)
+        if (this.level <= LogLevel.DEBUG)
             this.write(message, "DEBUG", 34);
     }
 
     public static info(message: string) {
-        if (this.level >= LogLevel.INFO || !this.level)
+        if (this.level <= LogLevel.INFO || !this.level)
             this.write(message, "INFO", 32);
     }
 
     public static warn(message: string) {
-        if (this.level >= LogLevel.WARN || !this.level)
+        if (this.level <= LogLevel.WARN || !this.level)
             this.write(message, "WARN", 33);
     }
 
     public static error(message: string) {
-        if (this.level >= LogLevel.ERROR || !this.level)
+        if (this.level <= LogLevel.ERROR || !this.level)
             this.write(message, "ERROR", 31);
     }
 
     public static fatal(message: string) {
-        if (this.level >= LogLevel.FATAL || !this.level)
+        if (this.level <= LogLevel.FATAL || !this.level)
             this.write(message, "FATAL", 31);
     }
 
