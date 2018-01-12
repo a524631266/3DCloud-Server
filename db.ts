@@ -1,17 +1,16 @@
 import { Db, MongoClient, ObjectID } from "mongodb";
+import { Config } from "./config";
 import { Logger } from "./logger";
-
-const config = require("./config");
 
 export class DB {
     public db: Db;
 
     public async connect() {
         Logger.info(`Connecting to database at
-                            ${config.DATABASE_URL}:${config.DATABASE_PORT}/${config.DATABASE_NAME}...`);
+                            ${Config.DATABASE_URL}:${Config.DATABASE_PORT}/${Config.DATABASE_NAME}...`);
 
         this.db = await MongoClient.connect(
-            "mongodb://" + config.DATABASE_URL + ":" + config.DATABASE_PORT + "/" + config.DATABASE_NAME
+            "mongodb://" + Config.DATABASE_URL + ":" + Config.DATABASE_PORT + "/" + Config.DATABASE_NAME
         );
 
         Logger.info("Successfully connected.");

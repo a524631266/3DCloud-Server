@@ -32,7 +32,11 @@ const server = http.createServer(app);
 
     const manager = new Manager(server);
 
-    await manager.init();
+    try {
+        await manager.init();
+    } catch (ex) {
+        process.exit(1);
+    }
 
     app.use((req: Request, res: Response, next) => {
         res.success = (data: any) => {

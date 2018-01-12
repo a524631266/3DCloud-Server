@@ -12,7 +12,7 @@ export class Config {
 
     public static load() {
         /* tslint:disable:no-var-requires */
-        const config = require("./config");
+        const config = require("./config.json");
 
         this.SERVER_PORT = config.SERVER_PORT || 3000;
 
