@@ -101,7 +101,7 @@ export class Socket {
         });
 
         const statusUpdate = () => {
-            Logger.debug("Emitting status");
+            Logger.log("Emitting status");
 
             this.usersNamespace.emit("status", statuses);
 

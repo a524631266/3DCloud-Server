@@ -60,7 +60,7 @@ const server = http.createServer(app);
 
         res.exception = (ex) => {
             Logger.error(ex);
-            console.trace(ex);
+            Logger.error(ex.trace);
 
             res.status(ex.status || 500).json({
                 success: false,
