@@ -15,9 +15,29 @@ export class Manager {
         this.io = new Socket(server, this.db);
     }
 
+    public async init() {
+        await this.db.connect();
+    }
+
     public async getHosts() {
         return await this.db.getHosts();
     }
+
+    //region Devices
+
+    public async getDevices() {
+        return await this.db.getDevices();
+    }
+
+    public async getDevice(id: string) {
+        return await this.db.getDevice(id);
+    }
+
+    public async deleteDevice(id: string) {
+        return await this.db.deleteDevice(id);
+    }
+
+    //endregion
 
     public async addHost(id) {
         const host = await this.db.addHost(id);

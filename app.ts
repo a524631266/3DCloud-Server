@@ -1,3 +1,5 @@
+import { DB } from "./db";
+
 require("source-map-support").install();
 
 import * as bodyParser from "body-parser";
@@ -24,6 +26,8 @@ const server = http.createServer(app);
     server.on("listening", onListening);
 
     const manager = new Manager(server);
+    
+    await manager.init();
 
     app.use((req: Request, res: Response, next) => {
         res.success = (data: any) => {
@@ -47,6 +51,7 @@ const server = http.createServer(app);
 
         res.exception = (ex) => {
             Logger.error(ex);
+            console.trace(ex);
 
             res.status(ex.status || 500).json({
                 success: false,

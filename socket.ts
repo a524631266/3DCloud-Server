@@ -8,16 +8,19 @@ export class Socket {
     private usersNamespace: SocketIO.Namespace;
     private hostsNamespace: SocketIO.Namespace;
 
+    private connectedHosts: {[id: string]: SocketIO.Socket};
+
     public constructor(server: http.Server, db: DB) {
         Logger.info("Initializing socket...");
 
         const io = SocketIO(server);
-        const hosts =  {};
         const devices = {};
         const statuses = {};
 
         this.hostsNamespace = io.of("/hosts");
         this.usersNamespace = io.of("/users");
+
+        this.connectedHosts = {};
 
         this.usersNamespace.on("connection", async (client) => {
             Logger.info(`Client ${client.id} connected to users channel`);
@@ -31,7 +34,7 @@ export class Socket {
                 client.disconnect();
             }
 
-            hosts[hostId] = client;
+            this.connectedHosts[hostId] = client;
 
             if (!await db.hostExists(hostId)) {
                 await db.addHost(hostId);
@@ -84,7 +87,7 @@ export class Socket {
             });
 
             client.on("disconnect", async () => {
-                delete hosts[hostId];
+                delete this.connectedHosts[hostId];
                 delete statuses[hostId];
             });
         });
@@ -108,6 +111,10 @@ export class Socket {
         statusUpdate();
 
         Logger.info("Socket initialized");
+    }
+
+    public getHost(id): SocketIO.Socket {
+        return this.connectedHosts[id] || null;
     }
 
     public emitToHosts(event: string | symbol, ...args: any[]): void {
