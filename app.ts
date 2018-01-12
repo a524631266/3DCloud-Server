@@ -1,32 +1,37 @@
-import { DB } from "./db";
-
-require("source-map-support").install();
-
 import * as bodyParser from "body-parser";
 import * as cors from "cors";
 import * as dateFormat from "dateformat";
 import * as express from "express";
 import * as http from "http";
 import * as morgan from "morgan";
+import * as sourceMapSupport from "source-map-support";
 
-import { Manager } from "./manager";
 import { Request, Response } from "express";
 import { Api } from "./api";
+import { Config } from "./config";
 import { Logger } from "./logger";
+import { Manager } from "./manager";
 
-const config = require("./config");
+Logger.info("Starting 3DCloud Server");
+
+sourceMapSupport.install();
+
+try {
+    Config.load();
+} catch (ex) {
+    Logger.error(ex);
+    process.exit(1);
+}
 
 const app = express();
 const server = http.createServer(app);
 
 (async () => {
-    Logger.info("Starting 3DCloud Server");
-
-    server.listen(config.SERVER_PORT);
+    server.listen(Config.SERVER_PORT);
     server.on("listening", onListening);
 
     const manager = new Manager(server);
-    
+
     await manager.init();
 
     app.use((req: Request, res: Response, next) => {
