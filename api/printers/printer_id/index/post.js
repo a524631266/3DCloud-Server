@@ -7,8 +7,6 @@ module.exports = function(manager) {
             let name = req.body['name'];
             let typeId = req.body['type'];
 
-            console.log(typeId);
-
             if (!name) {
                 res.error('A name must be specified');
                 return;

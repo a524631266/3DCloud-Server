@@ -6,8 +6,8 @@ export class DB {
     public db: Db;
 
     public async connect() {
-        Logger.info(`Connecting to database at
-                            ${Config.DATABASE_URL}:${Config.DATABASE_PORT}/${Config.DATABASE_NAME}...`);
+        Logger.info("Connecting to database at" +
+            `${Config.DATABASE_URL}:${Config.DATABASE_PORT}/${Config.DATABASE_NAME}...`);
 
         this.db = await MongoClient.connect(
             "mongodb://" + Config.DATABASE_URL + ":" + Config.DATABASE_PORT + "/" + Config.DATABASE_NAME

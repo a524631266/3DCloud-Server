@@ -13,7 +13,6 @@ export class ApiEndpoint {
     }
 
     public trigger(manager: Manager, req: express.Request, res: express.Response): void {
-        console.log('handler: ' + JSON.stringify(this));
         this.handler(manager, req, res);
     }
 }

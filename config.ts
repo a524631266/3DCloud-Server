@@ -1,3 +1,5 @@
+import { Logger, LogLevel } from "./logger";
+
 export class Config {
     public static SERVER_PORT;
 
@@ -36,5 +38,7 @@ export class Config {
         if (!this.AWS_REGION) {
             throw new Error("AWS_REGION must be defined in config.json");
         }
+
+        Logger.level = LogLevel.DEBUG;
     }
 }

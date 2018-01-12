@@ -1,15 +1,15 @@
 import * as express from "express";
 
-import { ApiEndpointCollection } from "../api-endpoint-collection";
 import { ApiEndpoint } from "../api-endpoint";
+import { ApiEndpointCollection } from "../api-endpoint-collection";
 import { Manager } from "../manager";
 
 export class DevicesEndpointCollection implements ApiEndpointCollection {
-    getEndpoints(): ApiEndpoint[] {
+    public getEndpoints(): ApiEndpoint[] {
         return [
-            new ApiEndpoint('/devices', 'GET', this.getDevices),
-            new ApiEndpoint('/devices/:device_id', 'GET', this.getDevice),
-            new ApiEndpoint('/devices/:device_id', 'DELETE', this.deleteDevice)
+            new ApiEndpoint("/devices", "GET", this.getDevices),
+            new ApiEndpoint("/devices/:device_id", "GET", this.getDevice),
+            new ApiEndpoint("/devices/:device_id", "DELETE", this.deleteDevice)
         ];
     }
 
@@ -23,12 +23,13 @@ export class DevicesEndpointCollection implements ApiEndpointCollection {
 
     private async getDevice(manager: Manager, req: express.Request, res: express.Response) {
         try {
-            let device = await manager.getDevice(req.params['device_id']);
+            const device = await manager.getDevice(req.params.device_id);
 
-            if (device)
+            if (device) {
                 res.success(device);
-            else
-                res.error('Not found', 404);
+            } else {
+                res.error("Not found", 404);
+            }
         } catch (ex) {
             res.exception(ex);
         }
@@ -36,7 +37,7 @@ export class DevicesEndpointCollection implements ApiEndpointCollection {
 
     private async deleteDevice(manager: Manager, req: express.Request, res: express.Response) {
         try {
-            await manager.deleteDevice(req.params['device_id']);
+            await manager.deleteDevice(req.params.device_id);
 
             res.success();
         } catch (ex) {

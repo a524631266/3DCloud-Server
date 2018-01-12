@@ -13,8 +13,6 @@ module.exports = function(manager) {
                 let device = await manager.db.getDevice(printerId);
 
                 hostId = device['host_id'];
-
-                console.log('host id: ' + hostId);
             } catch (ex) {
                 res.exception(ex);
                 return;

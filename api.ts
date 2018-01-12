@@ -3,12 +3,14 @@ import { Router } from "express-serve-static-core";
 import { ApiEndpoint } from "./api-endpoint";
 import { ApiEndpointCollection } from "./api-endpoint-collection";
 import { DevicesEndpointCollection } from "./api/devices";
+import { FilesEndpointCollection } from "./api/files";
 import { Logger } from "./logger";
 import { Manager } from "./manager";
 
 export class Api {
     private static collections: ApiEndpointCollection[] = [
-        new DevicesEndpointCollection()
+        new DevicesEndpointCollection(),
+        new FilesEndpointCollection()
     ];
 
     public static init(manager: Manager): Router {
@@ -27,6 +29,7 @@ export class Api {
 
     private static addEndpoints(router: express.Router, manager: Manager, endpoints: ApiEndpoint[]) {
         for (const endpoint of endpoints) {
+            Logger.debug(`Adding ${endpoint.getMethod().toUpperCase()} handler for route ${endpoint.getRoute()}`);
             router[endpoint.getMethod().toLowerCase()](
                 endpoint.getRoute(),
                 (req: express.Request, res: express.Response) => {

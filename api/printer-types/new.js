@@ -7,8 +7,6 @@ module.exports = function(db) {
                 let name = req.body['name'];
                 let driver = req.body['driver'];
 
-                console.log(req.body);
-
                 if (!name) {
                     res.error('Name must be specified');
                     return;

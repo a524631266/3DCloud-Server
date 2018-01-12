@@ -1,3 +1,4 @@
+import { Request } from "express";
 import { Server } from "http";
 import { AWSHelper } from "./aws";
 import { DB } from "./db";
@@ -12,6 +13,7 @@ export class Manager {
 
     public constructor(server: Server) {
         this.db = new DB();
+        this.aws = new AWSHelper();
         this.io = new Socket(server, this.db);
     }
 
@@ -19,11 +21,7 @@ export class Manager {
         await this.db.connect();
     }
 
-    public async getHosts() {
-        return await this.db.getHosts();
-    }
-
-    //region Devices
+    // region Devices
 
     public async getDevices() {
         return await this.db.getDevices();
@@ -37,7 +35,39 @@ export class Manager {
         return await this.db.deleteDevice(id);
     }
 
-    //endregion
+    // endregion
+
+    // region Files
+
+    public async getFiles() {
+        return this.db.getFiles();
+    }
+
+    public async uploadFile(key: string, name: string, req: Request) {
+        await this.aws.uploadFile(key, req);
+        return this.db.addFile(key, name);
+    }
+
+    public async getFile(id: string) {
+        return this.db.getFile(id);
+    }
+
+    public async deleteFile(id: string) {
+        return this.db.deleteFile(id);
+    }
+
+    public async getPresignedDownloadUrl(id: string) {
+        const file = await this.db.getFile(id);
+        return this.aws.getPresignedDownloadUrl(file._id, file.name);
+    }
+
+    // endregion
+
+    // region Hosts
+
+    public async getHosts() {
+        return await this.db.getHosts();
+    }
 
     public async addHost(id) {
         const host = await this.db.addHost(id);
@@ -60,4 +90,6 @@ export class Manager {
 
         this.io.emitToUsers("host-deleted", id);
     }
+
+    // endregion
 }
