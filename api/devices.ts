@@ -4,7 +4,7 @@ import { ApiEndpoint } from "../api-endpoint";
 import { ApiEndpointCollection } from "../api-endpoint-collection";
 import { Manager } from "../manager";
 
-export class DevicesEndpointCollection implements ApiEndpointCollection {
+export class DevicesEndpointCollection extends ApiEndpointCollection {
     public getEndpoints(): ApiEndpoint[] {
         return [
             new ApiEndpoint("/devices", "GET", this.getDevices),
