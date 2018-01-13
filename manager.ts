@@ -69,7 +69,11 @@ export class Manager {
         return await this.db.getHosts();
     }
 
-    public async addHost(id) {
+    public async getHost(id: string) {
+        return await this.db.getHost(id);
+    }
+
+    public async addHost(id: string) {
         const host = await this.db.addHost(id);
 
         this.io.emitToUsers("host-added", host);
@@ -77,7 +81,7 @@ export class Manager {
         return host;
     }
 
-    public async updateHost(id, name) {
+    public async updateHost(id: string, name: string) {
         const host = await this.db.updateHost(id, name);
 
         this.io.emitToUsers("host-updated", host);
@@ -85,7 +89,7 @@ export class Manager {
         return host;
     }
 
-    public async deleteHost(id) {
+    public async deleteHost(id: string) {
         await this.db.deleteHost(id);
 
         this.io.emitToUsers("host-deleted", id);
