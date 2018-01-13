@@ -126,9 +126,7 @@ export class PrintersEndpointCollection extends ApiEndpointCollection {
         Logger.info("Sending print request");
 
         try {
-            await manager.startPrint(req.params.printer_id, req.query.id);
-
-            res.success();
+            res.success(await manager.startPrint(req.params.printer_id, req.query.id));
         } catch (ex) {
             res.exception(ex);
         }

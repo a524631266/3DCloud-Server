@@ -236,22 +236,24 @@ export class Manager {
         if (this.io.hostIsConnected(device.host_id)) {
             const print = await this.db.addPrint(fileId, printerId, "pending", device.host_id);
 
-            this.io.getHost(device.host_id).emit("print", {
-                printer_id: printerId,
-                print_id: print._id,
-                key: file._id,
-                name: file.name
-            }, async (data) => {
-                if (!data.success) {
-                    if (data.error && data.error.message) {
+            return new Promise((resolve, reject) => {
+                this.io.getHost(device.host_id).emit("print", {
+                    printer_id: printerId,
+                    print_id: print._id,
+                    key: file._id,
+                    name: file.name
+                }, async (data) => {
+                    if (data.success) {
+                        resolve(print);
+                    } else if (data.error && data.error.message) {
                         await this.db.updatePrint(print._id, "error", data.error.message);
-                        throw new Error(data.error.message);
+                        reject(data.error.message);
                     } else {
                         await this.db.updatePrint(print._id, "error", "Unknown error");
-                        throw new Error("Failed to start print");
+                        reject("Failed to start print");
                     }
-                }
-            });
+                });
+            })
         } else {
             throw new Error("Host is not connected.");
         }
