@@ -2,9 +2,8 @@ import { Request } from "express";
 import { Server } from "http";
 import { AWSHelper } from "./aws";
 import { DB } from "./db";
+import { Logger } from "./logger";
 import { Socket } from "./socket";
-
-const UPLOADS_PREFIX = "uploads/";
 
 export class Manager {
     private io: Socket;
@@ -109,6 +108,171 @@ export class Manager {
 
     public async deletePrint(id: string) {
         return this.db.deletePrint(id);
+    }
+
+    // endregion
+
+    // region Printers
+
+    public async getPrinters() {
+        return this.db.getPrinters();
+    }
+
+    public async getPrinter(id: string) {
+        return this.db.getPrinter(id);
+    }
+
+    public async deletePrinter(id: string) {
+        return this.db.deletePrinter(id);
+    }
+
+    public async updatePrinter(id: string, name: string, typeId: string) {
+        const device = await this.db.getDevice(id);
+        const type = await this.db.getPrinterType(typeId);
+
+        // check if device exists and is currently connected
+        if (device && this.io.hostIsConnected(device.host_id)) {
+            // emit device update
+            this.io.getHost(device.host_id).emit("printer_updated", { device_id: id, driver: type.driver }, (data) => {
+                if (!data.success && data.error.type !== "PrinterOfflineError") {
+                    throw new Error(data.error.message);
+                }
+            });
+        } else {
+            Logger.log("Printer is not currently connected, omitting printer update emit");
+        }
+    }
+
+    public async nextPrint(printerId) {
+
+        const device = await this.db.getDevice(printerId);
+
+        const hostId = device.host_id;
+
+        if (!this.io.hostIsConnected(hostId)) {
+            throw new Error("Host not connected");
+        }
+
+        const print = await this.db.getNextQueuedPrint(printerId);
+
+        if (!print) {
+            throw new Error("No prints in queue");
+        }
+
+        await this.db.setPrintPending(print._id, hostId);
+
+        this.io.getHost(hostId).emit("print", {
+            printer_id: printerId,
+            print_id: print._id,
+            key: print.file_id,
+            name: print.file_name
+        }, async (data) => {
+            if (!data.success) {
+                if (data.error && data.error.message) {
+                    await this.db.updatePrint(print._id, "error", data.error.message);
+                    throw new Error("Failed to start print: " + data.error.message);
+                } else {
+                    await this.db.updatePrint(print._id, "error");
+                    throw new Error("Failed to start print");
+                }
+            }
+        });
+    }
+
+    public async pausePrint(printerId: string) {
+        const device = await this.db.getDevice(printerId);
+
+        if (device) {
+            if (this.io.hostIsConnected(device.host_id)) {
+                this.io.getHost(device.host_id).emit("pause", {printer_id: printerId}, (data) => {
+                    if (!data.success) {
+                        throw new Error(data.error.message);
+                    }
+                });
+            } else {
+                throw new Error("Host is not connected");
+            }
+        } else {
+            throw new Error("Device not found");
+        }
+    }
+
+    public async unpausePrint(printerId: string) {
+        const device = await this.db.getDevice(printerId);
+
+        if (device) {
+            if (this.io.hostIsConnected(device.host_id)) {
+                this.io.getHost(device.host_id).emit("unpause", {printer_id: printerId}, (data) => {
+                    if (!data.success) {
+                        throw new Error(data.error.message);
+                    }
+                });
+            } else {
+                throw new Error("Host is not connected");
+            }
+        } else {
+            throw new Error("Device not found");
+        }
+    }
+
+    public async queuePrint(printerId: string, fileId: string) {
+        const file = await this.db.getFile(fileId);
+
+        if (!file) {
+            throw new Error("File not found");
+        }
+
+        return await this.db.queuePrint(fileId, printerId);
+    }
+
+    public async startPrint(printerId: string, fileId: string) {
+        const device = await this.db.getDevice(printerId);
+        const file = await this.db.getFile(fileId);
+
+        if (!file) {
+            throw new Error("File not found");
+        }
+
+        if (this.io.hostIsConnected(device.host_id)) {
+            const print = await this.db.addPrint(fileId, printerId, "pending", device.host_id);
+
+            this.io.getHost(device.host_id).emit("print", {
+                printer_id: printerId,
+                print_id: print._id,
+                key: file._id,
+                name: file.name
+            }, async (data) => {
+                if (!data.success) {
+                    if (data.error && data.error.message) {
+                        await this.db.updatePrint(print._id, "error", data.error.message);
+                        throw new Error(data.error.message);
+                    } else {
+                        await this.db.updatePrint(print._id, "error", "Unknown error");
+                        throw new Error("Failed to start print");
+                    }
+                }
+            });
+        } else {
+            throw new Error("Host is not connected.");
+        }
+    }
+
+    public async cancelPrint(printerId: string) {
+        const device = await this.getDevice(printerId);
+
+        if (device) {
+            if (this.io.hostIsConnected(device.host_id)) {
+                this.io.getHost(device.host_id).emit("cancel", {printer_id: printerId}, (data) => {
+                    if (!data.success) {
+                        throw new Error(data.error.message);
+                    }
+                });
+            } else {
+                throw new Error("Host is not connected");
+            }
+        } else {
+            throw new Error("Device not found");
+        }
     }
 
     // endregion

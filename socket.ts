@@ -113,7 +113,11 @@ export class Socket {
         Logger.info("Socket initialized");
     }
 
-    public getHost(id): SocketIO.Socket {
+    public hostIsConnected(id: string): boolean {
+        return this.getHost(id) !== null;
+    }
+
+    public getHost(id: string): SocketIO.Socket {
         return this.connectedHosts[id] || null;
     }
 
