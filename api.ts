@@ -5,6 +5,7 @@ import { ApiEndpointCollection } from "./api-endpoint-collection";
 import { DevicesEndpointCollection } from "./api/devices";
 import { FilesEndpointCollection } from "./api/files";
 import { HostsEndpointCollection } from "./api/hosts";
+import { PrintsEndpointCollection } from "./api/prints";
 import { Logger } from "./logger";
 import { Manager } from "./manager";
 
@@ -12,7 +13,8 @@ export class Api {
     private static collections: ApiEndpointCollection[] = [
         new DevicesEndpointCollection(),
         new FilesEndpointCollection(),
-        new HostsEndpointCollection()
+        new HostsEndpointCollection(),
+        new PrintsEndpointCollection()
     ];
 
     public static init(manager: Manager): Router {

@@ -96,4 +96,20 @@ export class Manager {
     }
 
     // endregion
+
+    // region Prints
+
+    public async getPrints() {
+        return this.db.getPrints();
+    }
+
+    public async getPrint(id: string) {
+        return this.db.getPrint(id);
+    }
+
+    public async deletePrint(id: string) {
+        return this.db.deletePrint(id);
+    }
+
+    // endregion
 }
