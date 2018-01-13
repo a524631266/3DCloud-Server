@@ -32,6 +32,7 @@ export class FilesEndpointCollection extends ApiEndpointCollection {
 
         if (!name) {
             res.error("A name must be specified");
+            return;
         }
 
         try {

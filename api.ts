@@ -5,6 +5,7 @@ import { ApiEndpointCollection } from "./api-endpoint-collection";
 import { DevicesEndpointCollection } from "./api/devices";
 import { FilesEndpointCollection } from "./api/files";
 import { HostsEndpointCollection } from "./api/hosts";
+import { PrinterTypesEndpointCollection } from "./api/printer-types";
 import { PrintersEndpointCollection } from "./api/printers";
 import { PrintsEndpointCollection } from "./api/prints";
 import { Logger } from "./logger";
@@ -16,7 +17,8 @@ export class Api {
         new FilesEndpointCollection(),
         new HostsEndpointCollection(),
         new PrintsEndpointCollection(),
-        new PrintersEndpointCollection()
+        new PrintersEndpointCollection(),
+        new PrinterTypesEndpointCollection()
     ];
 
     public static init(manager: Manager): Router {

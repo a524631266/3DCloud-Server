@@ -276,4 +276,16 @@ export class Manager {
     }
 
     // endregion
+
+    // region Printer Types
+
+    public async getPrinterTypes() {
+        return await this.db.getPrinterTypes();
+    }
+
+    public async addPrinterType(name: string, driver: string) {
+        return await this.db.addPrinterType(name, driver);
+    }
+
+    // endregion
 }

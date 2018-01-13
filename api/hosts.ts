@@ -32,6 +32,7 @@ export class HostsEndpointCollection extends ApiEndpointCollection {
     private async updateHost(manager: Manager, req: express.Request, res: express.Response) {
         if (!req.body.name) {
             res.error("Name must be specified.");
+            return;
         }
 
         try {
