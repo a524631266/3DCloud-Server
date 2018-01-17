@@ -9,7 +9,7 @@ export class FilesEndpointCollection extends ApiEndpointCollection {
     public getEndpoints(): ApiEndpoint[] {
         return [
             new ApiEndpoint("/files", "GET", this.getFiles),
-            new ApiEndpoint("/files/upload", "GET", this.uploadFile),
+            new ApiEndpoint("/files/upload", "PUT", this.uploadFile),
             new ApiEndpoint("/files/:file_id", "GET", this.getFile),
             new ApiEndpoint("/files/:file_id", "DELETE", this.deleteFile),
             new ApiEndpoint("/files/:file_id/download", "GET", this.downloadFile),
