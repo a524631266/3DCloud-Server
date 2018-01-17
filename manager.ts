@@ -130,6 +130,8 @@ export class Manager {
         const device = await this.db.getDevice(id);
         const type = await this.db.getPrinterType(typeId);
 
+        await this.db.updatePrinter(id, name, typeId);
+
         // check if device exists and is currently connected
         if (device && this.io.hostIsConnected(device.host_id)) {
             // emit device update
