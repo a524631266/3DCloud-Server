@@ -13,7 +13,7 @@ export class Manager {
     public constructor(server: Server) {
         this.db = new DB();
         this.aws = new AWSHelper();
-        this.io = new Socket(server, this.db);
+        this.io = new Socket(server, this);
     }
 
     public async init() {
@@ -28,6 +28,10 @@ export class Manager {
 
     public async getDevice(id: string) {
         return await this.db.getDevice(id);
+    }
+
+    public async updateDevice(id: string, hostId: string) {
+        return await this.db.updateDevice(id, hostId);
     }
 
     public async deleteDevice(id: string) {
@@ -72,6 +76,10 @@ export class Manager {
         return await this.db.getHost(id);
     }
 
+    public async hostExists(id: string) {
+        return await this.db.hostExists(id);
+    }
+
     public async addHost(id: string) {
         const host = await this.db.addHost(id);
 
@@ -107,7 +115,31 @@ export class Manager {
     }
 
     public async deletePrint(id: string) {
-        return this.db.deletePrint(id);
+        const result = await this.db.deletePrint(id);
+
+        this.io.emitToUsers("delete-print", id);
+
+        return result;
+    }
+
+    public async setPrintPending(id: string, hostId: string) {
+        const result = await this.db.setPrintPending(id, hostId);
+
+        this.io.emitToUsers("set-print-pending", id, hostId);
+
+        return result;
+    }
+
+    public async updatePrint(id: string, status: string, description: any = null) {
+        const result = await this.db.updatePrint(id, status, description);
+
+        this.io.emitToUsers("update-print", { id, status, description });
+
+        return result;
+    }
+
+    public async resetHostPrints(hostId: string) {
+        return this.db.resetHostPrints(hostId);
     }
 
     // endregion
@@ -120,6 +152,10 @@ export class Manager {
 
     public async getPrinter(id: string) {
         return this.db.getPrinter(id);
+    }
+
+    public async printerExists(id: string) {
+        return this.db.printerExists(id);
     }
 
     public async deletePrinter(id: string) {
@@ -146,7 +182,6 @@ export class Manager {
     }
 
     public async nextPrint(printerId) {
-
         const device = await this.db.getDevice(printerId);
 
         const hostId = device.host_id;
@@ -161,7 +196,7 @@ export class Manager {
             throw new Error("No prints in queue");
         }
 
-        await this.db.setPrintPending(print._id, hostId);
+        await this.setPrintPending(print._id, hostId);
 
         this.io.getHost(hostId).emit("print", {
             printer_id: printerId,
@@ -171,10 +206,10 @@ export class Manager {
         }, async (data) => {
             if (!data.success) {
                 if (data.error && data.error.message) {
-                    await this.db.updatePrint(print._id, "error", data.error.message);
+                    await this.updatePrint(print._id, "error", data.error.message);
                     throw new Error("Failed to start print: " + data.error.message);
                 } else {
-                    await this.db.updatePrint(print._id, "error");
+                    await this.updatePrint(print._id, "error");
                     throw new Error("Failed to start print");
                 }
             }
@@ -248,14 +283,14 @@ export class Manager {
                     if (data.success) {
                         resolve(print);
                     } else if (data.error && data.error.message) {
-                        await this.db.updatePrint(print._id, "error", data.error.message);
+                        await this.updatePrint(print._id, "error", data.error.message);
                         reject(data.error.message);
                     } else {
-                        await this.db.updatePrint(print._id, "error", "Unknown error");
+                        await this.updatePrint(print._id, "error", "Unknown error");
                         reject("Failed to start print");
                     }
                 });
-            })
+            });
         } else {
             throw new Error("Host is not connected.");
         }
@@ -285,6 +320,10 @@ export class Manager {
 
     public async getPrinterTypes() {
         return await this.db.getPrinterTypes();
+    }
+
+    public async getPrinterType(id: string) {
+        return await this.db.getPrinterType(id);
     }
 
     public async addPrinterType(name: string, driver: string) {

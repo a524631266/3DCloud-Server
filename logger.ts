@@ -4,37 +4,37 @@ import * as path from "path";
 export class Logger {
     public static level: LogLevel;
 
-    public static trace(message: string) {
+    public static trace(message: any) {
         if (this.level <= LogLevel.TRACE)
             this.write(message, "TRACE", 37);
     }
 
-    public static log(message: string) {
+    public static log(message: any) {
         if (this.level <= LogLevel.LOG)
             this.write(message, "LOG", 37);
     }
 
-    public static debug(message: string) {
+    public static debug(message: any) {
         if (this.level <= LogLevel.DEBUG)
             this.write(message, "DEBUG", 34);
     }
 
-    public static info(message: string) {
+    public static info(message: any) {
         if (this.level <= LogLevel.INFO || !this.level)
             this.write(message, "INFO", 32);
     }
 
-    public static warn(message: string) {
+    public static warn(message: any) {
         if (this.level <= LogLevel.WARN || !this.level)
             this.write(message, "WARN", 33);
     }
 
-    public static error(message: string) {
+    public static error(message: any) {
         if (this.level <= LogLevel.ERROR || !this.level)
             this.write(message, "ERROR", 31);
     }
 
-    public static fatal(message: string) {
+    public static fatal(message: any) {
         if (this.level <= LogLevel.FATAL || !this.level)
             this.write(message, "FATAL", 31);
     }
@@ -42,7 +42,7 @@ export class Logger {
     private static stackReg = /at\s+(.*)\s+\((.*):(\d*):(\d*)\)/i;
     private static stackReg2 = /at\s+()(.*):(\d*):(\d*)/i;
 
-    private static write(message: string, level: string, color: number) {
+    private static write(message: any, level: string, color: number) {
         const stackLine = (new Error()).stack.split("\n").slice(3)[0];
         const match = this.stackReg.exec(stackLine) || this.stackReg2.exec(stackLine);
 

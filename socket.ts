@@ -1,8 +1,7 @@
-import { DB } from "./db";
-
 import * as http from "http";
 import * as SocketIO from "socket.io";
 import { Logger } from "./logger";
+import { Manager } from "./manager";
 
 export class Socket {
     private usersNamespace: SocketIO.Namespace;
@@ -10,7 +9,7 @@ export class Socket {
 
     private connectedHosts: {[id: string]: SocketIO.Socket};
 
-    public constructor(server: http.Server, db: DB) {
+    public constructor(server: http.Server, manager: Manager) {
         Logger.info("Initializing socket...");
 
         const io = SocketIO(server);
@@ -36,8 +35,8 @@ export class Socket {
 
             this.connectedHosts[hostId] = client;
 
-            if (!await db.hostExists(hostId)) {
-                await db.addHost(hostId);
+            if (!await manager.hostExists(hostId)) {
+                await manager.addHost(hostId);
             }
 
             Logger.info(`Client ${client.id} (host ID ${hostId}) connected to hosts namespace`);
@@ -47,13 +46,13 @@ export class Socket {
 
                 devices[data.device.id] = hostId;
 
-                await db.updateDevice(data.device.id, hostId);
+                await manager.updateDevice(data.device.id, hostId);
 
                 this.usersNamespace.emit("device_updated", data.device); // TODO: actual structure
 
-                if (await db.printerExists(data.device.id)) {
-                    const printer = await db.getPrinter(data.device.id);
-                    const printerType = await db.getPrinterType(printer.type);
+                if (await manager.printerExists(data.device.id)) {
+                    const printer = await manager.getPrinter(data.device.id);
+                    const printerType = await manager.getPrinterType(printer.type);
 
                     const send = {
                         device_id: printer._id,
@@ -73,17 +72,15 @@ export class Socket {
             });
 
             client.on("print-status", async (data) => {
-                Logger.log(data);
-
                 try {
-                    await db.updatePrint(data.print_id, data.status, data.description);
+                    await manager.updatePrint(data.print_id, data.status, data.description);
                 } catch (ex) {
                     Logger.error(ex);
                 }
             });
 
             client.on("reset", async () => {
-                await db.resetHostPrints(hostId);
+                await manager.resetHostPrints(hostId);
             });
 
             client.on("disconnect", async () => {
