@@ -6,6 +6,8 @@ import * as http from "http";
 import * as morgan from "morgan";
 import * as sourceMapSupport from "source-map-support";
 
+sourceMapSupport.install();
+
 import { Request, Response } from "express";
 import { Api } from "./api";
 import { Config } from "./config";
@@ -13,8 +15,6 @@ import { Logger } from "./logger";
 import { Manager } from "./manager";
 
 Logger.info("Starting 3DCloud Server");
-
-sourceMapSupport.install();
 
 try {
     Config.load();

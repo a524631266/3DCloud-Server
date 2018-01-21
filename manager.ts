@@ -196,7 +196,7 @@ export class Manager {
             throw new Error("No prints in queue");
         }
 
-        await this.setPrintPending(print._id, hostId);
+        await this.setPrintPending(print._id.toHexString(), hostId);
 
         this.io.getHost(hostId).emit("print", {
             printer_id: printerId,
@@ -206,10 +206,10 @@ export class Manager {
         }, async (data) => {
             if (!data.success) {
                 if (data.error && data.error.message) {
-                    await this.updatePrint(print._id, "error", data.error.message);
+                    await this.updatePrint(print._id.toHexString(), "error", data.error.message);
                     throw new Error("Failed to start print: " + data.error.message);
                 } else {
-                    await this.updatePrint(print._id, "error");
+                    await this.updatePrint(print._id.toHexString(), "error");
                     throw new Error("Failed to start print");
                 }
             }
@@ -283,10 +283,10 @@ export class Manager {
                     if (data.success) {
                         resolve(print);
                     } else if (data.error && data.error.message) {
-                        await this.updatePrint(print._id, "error", data.error.message);
+                        await this.updatePrint(print._id.toHexString(), "error", data.error.message);
                         reject(data.error.message);
                     } else {
-                        await this.updatePrint(print._id, "error", "Unknown error");
+                        await this.updatePrint(print._id.toHexString(), "error", "Unknown error");
                         reject("Failed to start print");
                     }
                 });
