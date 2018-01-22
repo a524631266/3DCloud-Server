@@ -40,7 +40,7 @@ export class FilesEndpointCollection extends ApiEndpointCollection {
 
             res.success(await manager.uploadFile(key, name, req));
         } catch (ex) {
-            Logger.error(ex);
+            res.exception(ex);
         }
     }
 

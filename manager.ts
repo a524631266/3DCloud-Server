@@ -4,6 +4,7 @@ import { AWSHelper } from "./aws";
 import { DB } from "./db";
 import { Logger } from "./logger";
 import { Socket } from "./socket";
+import { IPrint } from "./schemas/print";
 
 export class Manager {
     private io: Socket;
@@ -131,11 +132,11 @@ export class Manager {
     }
 
     public async updatePrint(id: string, status: string, description: any = null) {
-        const result = await this.db.updatePrint(id, status, description);
+        const print: IPrint = await this.db.updatePrint(id, status, description);
 
-        this.io.emitToUsers("update-print", { id, status, description });
+        this.io.emitToUsers("update-print", print);
 
-        return result;
+        return print;
     }
 
     public async resetHostPrints(hostId: string) {

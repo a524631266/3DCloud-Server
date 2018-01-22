@@ -182,7 +182,7 @@ export class DB {
     public async addFile(id, name) {
         Logger.log(`Adding file "${id}" (${name}) to database`);
 
-        const file = new File({_id: id, name: name});
+        const file = new File({_id: id, name: name, date_added: new Date()});
 
         await file.save();
 
