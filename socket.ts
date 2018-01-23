@@ -72,6 +72,8 @@ export class Socket {
             });
 
             client.on("print-status", async (data) => {
+                Logger.debug(`Received print status notification "${data.status}" for print ${data.print_id}`);
+
                 try {
                     await manager.updatePrint(data.print_id, data.status, data.description);
                 } catch (ex) {
