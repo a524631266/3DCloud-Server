@@ -5,6 +5,7 @@ import { Logger } from "./logger";
 import Device from "./schemas/device";
 import File from "./schemas/file";
 import Host from "./schemas/host";
+import { IMaterialVariant, Material } from "./schemas/material";
 import Print from "./schemas/print";
 import Printer from "./schemas/printer";
 import PrinterType from "./schemas/printer-type";
@@ -211,7 +212,7 @@ export class DB {
 
         const collection = this.db.collection("prints");
 
-        return await collection.findOne({_id: new mongoose.Types.ObjectId(id)});
+        return await collection.findOne({_id: new Types.ObjectId(id)});
     }
 
     public async addPrint(fileId, printerId, status = "pending", hostId = null) {
@@ -251,7 +252,7 @@ export class DB {
         Logger.log(`Setting print "${printId}" as pending`);
 
         return await Print.findByIdAndUpdate(
-            new mongoose.Types.ObjectId(printId),
+            new Types.ObjectId(printId),
             {$set: {status: "pending", host_id: hostId}}
         );
     }
@@ -272,13 +273,13 @@ export class DB {
             data.completed = new Date();
         }
 
-        return await Print.findByIdAndUpdate(new mongoose.Types.ObjectId(printId), {$set: data});
+        return await Print.findByIdAndUpdate(new Types.ObjectId(printId), {$set: data});
     }
 
     public async deletePrint(printId) {
         Logger.log(`Deleting print "${printId}"`);
 
-        Print.findByIdAndRemove(new mongoose.Types.ObjectId(printId));
+        Print.findByIdAndRemove(new Types.ObjectId(printId));
     }
 
     public async resetHostPrints(hostId) {
@@ -313,7 +314,7 @@ export class DB {
     public async getPrinterType(id) {
         Logger.log("Fetching all printer types");
 
-        return await PrinterType.findById(mongoose.Types.ObjectId(id));
+        return await PrinterType.findById(Types.ObjectId(id));
     }
 
     public async addPrinterType(name, driver) {
@@ -325,5 +326,29 @@ export class DB {
 
         return printerType;
     }
+    // endregion
+
+    // region Materials
+
+    public async getMaterials() {
+        return await Material.find();
+    }
+
+    public async getMaterial(id: string) {
+        return await Material.findById(Types.ObjectId(id));
+    }
+
+    public async addMaterial(name: string, brand: string, variants: IMaterialVariant[]) {
+        const material = new Material({name: name, brand: brand, variants: variants});
+
+        await material.save();
+
+        return material;
+    }
+
+    public async deleteMaterial(id: string) {
+        return await Material.findByIdAndRemove(Types.ObjectId(id));
+    }
+
     // endregion
 }

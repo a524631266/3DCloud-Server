@@ -59,8 +59,7 @@ const server = http.createServer(app);
         };
 
         res.exception = (ex) => {
-            Logger.error(ex);
-            Logger.error(ex.trace);
+            Logger.error(ex.stack);
 
             res.status(ex.status || 500).json({
                 success: false,
@@ -84,7 +83,7 @@ const server = http.createServer(app);
     app.use(morgan((tokens, req, res) => {
         return [
             dateFormat("yyyy-mm-dd HH:MM:ss.l"),
-            "|   HTTP |",
+            "|  HTTP |",
             tokens.method(req, res),
             tokens.url(req, res),
             tokens.status(req, res),

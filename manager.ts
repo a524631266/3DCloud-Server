@@ -3,8 +3,9 @@ import { Server } from "http";
 import { AWSHelper } from "./aws";
 import { DB } from "./db";
 import { Logger } from "./logger";
-import { Socket } from "./socket";
+import { IMaterialVariant } from "./schemas/material";
 import { IPrint } from "./schemas/print";
+import { Socket } from "./socket";
 
 export class Manager {
     private io: Socket;
@@ -329,6 +330,26 @@ export class Manager {
 
     public async addPrinterType(name: string, driver: string) {
         return await this.db.addPrinterType(name, driver);
+    }
+
+    // endregion
+
+    // region Materials
+
+    public async getMaterials() {
+        return await this.db.getMaterials();
+    }
+
+    public async getMaterial(id: string) {
+        return await this.db.getMaterial(id);
+    }
+
+    public async addMaterial(name: string, brand: string, variants: IMaterialVariant[]) {
+        return await this.db.addMaterial(name, brand, variants);
+    }
+
+    public async deleteMaterial(id: string) {
+        return await this.db.deleteMaterial(id);
     }
 
     // endregion
