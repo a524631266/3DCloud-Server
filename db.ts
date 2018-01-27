@@ -77,7 +77,7 @@ export class DB {
     public async updateHost(id, name) {
         Logger.log("Updating host with ID " + id);
 
-        return await Host.findByIdAndUpdate(id, { $set: { name: name } });
+        return await Host.findByIdAndUpdate(id, { $set: { name: name } }, {new: true});
     }
 
     // endregion
@@ -105,7 +105,7 @@ export class DB {
         if (await this.deviceExists(id)) {
             Logger.log(`Updating device with ID "%${id}"`);
 
-            return await Device.findByIdAndUpdate(id, { $set: { host_id: hostId } });
+            return await Device.findByIdAndUpdate(id, { $set: { host_id: hostId } }, {new: true});
         } else {
             Logger.log(`Inserting device with ID "${id}"`);
 
@@ -148,7 +148,7 @@ export class DB {
         if (await this.printerExists(id)) {
             Logger.log(`Updating printer with ID "${id}"`);
 
-            return await Printer.findByIdAndUpdate(id, { $set: { name: name, type: type } });
+            return await Printer.findByIdAndUpdate(id, { $set: { name: name, type: type } }, {new: true});
         } else {
             Logger.log(`Inserting printer with ID "${id}"`);
 
@@ -253,7 +253,8 @@ export class DB {
 
         return await Print.findByIdAndUpdate(
             new Types.ObjectId(printId),
-            {$set: {status: "pending", host_id: hostId}}
+            {$set: {status: "pending", host_id: hostId}},
+            {new: true}
         );
     }
 
@@ -273,7 +274,7 @@ export class DB {
             data.completed = new Date();
         }
 
-        return await Print.findByIdAndUpdate(new Types.ObjectId(printId), {$set: data});
+        return await Print.findByIdAndUpdate(new Types.ObjectId(printId), {$set: data}, {new: true});
     }
 
     public async deletePrint(printId) {
@@ -344,6 +345,10 @@ export class DB {
         await material.save();
 
         return material;
+    }
+
+    public async updateMaterial(id: string, name: string, brand: string, variants: IMaterialVariant[]) {
+        return await Material.findByIdAndUpdate(id, {$set: {_id: id, name: name, brand: brand, variants: variants}}, {new: true});
     }
 
     public async deleteMaterial(id: string) {

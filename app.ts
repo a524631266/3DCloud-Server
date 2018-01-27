@@ -19,7 +19,7 @@ Logger.info("Starting 3DCloud Server");
 try {
     Config.load();
 } catch (ex) {
-    Logger.error(ex);
+    Logger.fatal(ex);
     process.exit(1);
 }
 
@@ -35,6 +35,7 @@ const server = http.createServer(app);
     try {
         await manager.init();
     } catch (ex) {
+        Logger.fatal(ex);
         process.exit(1);
     }
 

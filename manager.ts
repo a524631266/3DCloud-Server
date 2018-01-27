@@ -3,7 +3,7 @@ import { Server } from "http";
 import { AWSHelper } from "./aws";
 import { DB } from "./db";
 import { Logger } from "./logger";
-import { IMaterialVariant } from "./schemas/material";
+import {IMaterial, IMaterialVariant} from "./schemas/material";
 import { IPrint } from "./schemas/print";
 import { Socket } from "./socket";
 
@@ -346,6 +346,10 @@ export class Manager {
 
     public async addMaterial(name: string, brand: string, variants: IMaterialVariant[]) {
         return await this.db.addMaterial(name, brand, variants);
+    }
+
+    public async updateMaterial(id: string, name: string, brand: string, variants: IMaterialVariant[]) {
+        return await this.db.updateMaterial(id, name, brand, variants);
     }
 
     public async deleteMaterial(id: string) {

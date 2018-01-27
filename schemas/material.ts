@@ -34,7 +34,11 @@ export const MaterialSchema = new Schema({
     _id: {required: true, type: Schema.Types.ObjectId, auto: true},
     name: {required: true, type: String},
     brand: {required: true, type: String},
-    variants: {required: true, type: [MaterialVariantSchema], default: []}
+    variants: {
+        required: true,
+        type: [MaterialVariantSchema],
+        default: [{name: "Generic", color: {red: 255, green: 255, blue: 255}}]
+    }
 });
 
 export const Material = mongoose.model<IMaterial>("Material", MaterialSchema, "materials");
