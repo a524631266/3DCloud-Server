@@ -168,7 +168,7 @@ export class Manager {
         const device = await this.db.getDevice(id);
         const type = await this.db.getPrinterType(typeId);
 
-        await this.db.updatePrinter(id, name, typeId);
+        const printer = await this.db.updatePrinter(id, name, typeId);
 
         // check if device exists and is currently connected
         if (device && this.io.hostIsConnected(device.host._id)) {
@@ -181,6 +181,8 @@ export class Manager {
         } else {
             Logger.log("Printer is not currently connected, omitting printer update emit");
         }
+
+        return printer;
     }
 
     public async nextPrint(printerId) {

@@ -54,9 +54,7 @@ export class PrintersEndpointCollection extends ApiEndpointCollection {
         Logger.log("Updating printer with ID " + printerId);
 
         try {
-            await manager.updatePrinter(printerId, name, typeId);
-
-            res.success();
+            res.success(await manager.updatePrinter(printerId, name, typeId));
         } catch (ex) {
             res.exception(ex);
         }
