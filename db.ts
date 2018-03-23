@@ -71,13 +71,17 @@ export class DB {
     public async deleteHost(id) {
         Logger.log("Deleting host with ID " + id);
 
-        await Host.deleteOne({_id: id});
+        await Host.findOne({_id: id}, async (err, document) => {
+            await document.remove();
+        });
     }
 
     public async updateHost(id, name) {
         Logger.log("Updating host with ID " + id);
 
-        return await Host.findByIdAndUpdate(id, { $set: { name: name } }, {new: true});
+        return await Host.findById(id, { $set: { name: name } }, {new: true}, async (err, host) => {
+            await host.remove();
+        });
     }
 
     // endregion

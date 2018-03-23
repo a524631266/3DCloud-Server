@@ -278,29 +278,33 @@ export class Manager {
             throw new Error(`File "${fileId}" not found`);
         }
 
-        if (this.io.hostIsConnected(device.host._id)) {
-            const print = await this.db.addPrint(fileId, printerId, "pending", device.host._id);
+        if (device.host) {
+            if (this.io.hostIsConnected(device.host._id)) {
+                const print = await this.db.addPrint(fileId, printerId, "pending", device.host._id);
 
-            return new Promise((resolve, reject) => {
-                this.io.getHost(device.host._id).emit("print", {
-                    printer_id: printerId,
-                    print_id: print._id,
-                    key: file._id,
-                    name: file.name
-                }, async (data) => {
-                    if (data.success) {
-                        resolve(print);
-                    } else if (data.error && data.error.message) {
-                        await this.updatePrint(print._id.toHexString(), "error", data.error.message);
-                        reject(data.error.message);
-                    } else {
-                        await this.updatePrint(print._id.toHexString(), "error", "Unknown error");
-                        reject("Failed to start print");
-                    }
+                return new Promise((resolve, reject) => {
+                    this.io.getHost(device.host._id).emit("print", {
+                        printer_id: printerId,
+                        print_id: print._id,
+                        key: file._id,
+                        name: file.name
+                    }, async (data) => {
+                        if (data.success) {
+                            resolve(print);
+                        } else if (data.error && data.error.message) {
+                            await this.updatePrint(print._id.toHexString(), "error", data.error.message);
+                            reject(data.error.message);
+                        } else {
+                            await this.updatePrint(print._id.toHexString(), "error", "Unknown error");
+                            reject("Failed to start print");
+                        }
+                    });
                 });
-            });
+            } else {
+                throw new Error("Host is not connected.");
+            }
         } else {
-            throw new Error("Host is not connected.");
+            throw new Error("Host does not exist");
         }
     }
 
