@@ -152,7 +152,10 @@ export class DB {
         if (await this.printerExists(id)) {
             Logger.log(`Updating printer with ID "${id}"`);
 
-            return await Printer.findByIdAndUpdate(id, { $set: { name: name, type: type } }, {new: true}).populate("device").populate("type").exec();
+            return await Printer.findByIdAndUpdate(id, { $set: { name: name, type: type } }, {new: true})
+                .populate("device")
+                .populate("type")
+                .exec();
         } else {
             Logger.log(`Inserting printer with ID "${id}"`);
 
