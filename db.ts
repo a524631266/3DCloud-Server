@@ -129,13 +129,13 @@ export class DB {
     public async getPrinters() {
         Logger.log("Fetching all printers");
 
-        return await Printer.find();
+        return await Printer.find().populate("type");
     }
 
     public async getPrinter(id) {
         Logger.log("Fetching printer with ID " + id);
 
-        return await Printer.findById(id);
+        return await Printer.findById(id).populate("type");
     }
 
     public async printerExists(id) {

@@ -3,7 +3,7 @@ import { Server } from "http";
 import { AWSHelper } from "./aws";
 import { DB } from "./db";
 import { Logger } from "./logger";
-import {IColor, IMaterial, IMaterialVariant} from "./schemas/material";
+import { IColor, IMaterialVariant } from "./schemas/material";
 import { IPrint } from "./schemas/print";
 import { Socket } from "./socket";
 
@@ -149,7 +149,7 @@ export class Manager {
     // region Printers
 
     public async getPrinters() {
-        return this.db.getPrinters();
+        return await this.db.getPrinters();
     }
 
     public async getPrinter(id: string) {

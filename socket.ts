@@ -52,11 +52,10 @@ export class Socket {
 
                 if (await manager.printerExists(data.device.id)) {
                     const printer = await manager.getPrinter(data.device.id);
-                    const printerType = await manager.getPrinterType(printer.type);
 
                     const send = {
                         device_id: printer._id,
-                        driver: printerType.driver
+                        driver: printer.type.driver
                     };
 
                     client.emit("printer_updated", send, (response) => {
@@ -68,7 +67,7 @@ export class Socket {
             });
 
             client.on("status", (data) => {
-                Logger.debug(`Received statuses for host ${hostId}: ${JSON.stringify(data)}`);
+                Logger.log(`Received statuses for host ${hostId}: ${JSON.stringify(data)}`);
                 statuses[hostId] = data;
             });
 
