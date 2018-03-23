@@ -171,9 +171,9 @@ export class Manager {
         await this.db.updatePrinter(id, name, typeId);
 
         // check if device exists and is currently connected
-        if (device && this.io.hostIsConnected(device.host_id)) {
+        if (device && this.io.hostIsConnected(device.host._id)) {
             // emit device update
-            this.io.getHost(device.host_id).emit("printer_updated", { device_id: id, driver: type.driver }, (data) => {
+            this.io.getHost(device.host._id).emit("printer_updated", { device_id: id, driver: type.driver }, (data) => {
                 if (!data.success && data.error.type !== "PrinterOfflineError") {
                     throw new Error(data.error.message);
                 }
@@ -186,7 +186,7 @@ export class Manager {
     public async nextPrint(printerId) {
         const device = await this.db.getDevice(printerId);
 
-        const hostId = device.host_id;
+        const hostId = device.host._id;
 
         if (!this.io.hostIsConnected(hostId)) {
             throw new Error("Host not connected");
@@ -222,8 +222,8 @@ export class Manager {
         const device = await this.db.getDevice(printerId);
 
         if (device) {
-            if (this.io.hostIsConnected(device.host_id)) {
-                this.io.getHost(device.host_id).emit("pause", {printer_id: printerId}, (data) => {
+            if (this.io.hostIsConnected(device.host._id)) {
+                this.io.getHost(device.host._id).emit("pause", {printer_id: printerId}, (data) => {
                     if (!data.success) {
                         throw new Error(data.error.message);
                     }
@@ -240,8 +240,8 @@ export class Manager {
         const device = await this.db.getDevice(printerId);
 
         if (device) {
-            if (this.io.hostIsConnected(device.host_id)) {
-                this.io.getHost(device.host_id).emit("unpause", {printer_id: printerId}, (data) => {
+            if (this.io.hostIsConnected(device.host._id)) {
+                this.io.getHost(device.host._id).emit("unpause", {printer_id: printerId}, (data) => {
                     if (!data.success) {
                         throw new Error(data.error.message);
                     }
@@ -276,11 +276,11 @@ export class Manager {
             throw new Error(`File "${fileId}" not found`);
         }
 
-        if (this.io.hostIsConnected(device.host_id)) {
-            const print = await this.db.addPrint(fileId, printerId, "pending", device.host_id);
+        if (this.io.hostIsConnected(device.host._id)) {
+            const print = await this.db.addPrint(fileId, printerId, "pending", device.host._id);
 
             return new Promise((resolve, reject) => {
-                this.io.getHost(device.host_id).emit("print", {
+                this.io.getHost(device.host._id).emit("print", {
                     printer_id: printerId,
                     print_id: print._id,
                     key: file._id,
@@ -306,8 +306,8 @@ export class Manager {
         const device = await this.getDevice(printerId);
 
         if (device) {
-            if (this.io.hostIsConnected(device.host_id)) {
-                this.io.getHost(device.host_id).emit("cancel", {printer_id: printerId}, (data) => {
+            if (this.io.hostIsConnected(device.host._id)) {
+                this.io.getHost(device.host._id).emit("cancel", {printer_id: printerId}, (data) => {
                     if (!data.success) {
                         throw new Error(data.error.message);
                     }

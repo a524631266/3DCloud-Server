@@ -71,7 +71,7 @@ export class DB {
     public async deleteHost(id) {
         Logger.log("Deleting host with ID " + id);
 
-        Host.deleteOne({_id: id});
+        await Host.deleteOne({_id: id});
     }
 
     public async updateHost(id, name) {
@@ -86,13 +86,13 @@ export class DB {
     public async getDevice(id) {
         Logger.log(`Fetching device with ID "${id}"`);
 
-        return await Device.findById(id);
+        return await Device.findById(id).populate("host");
     }
 
     public async getDevices() {
         Logger.log("Fetching all devices");
 
-        return await Device.find();
+        return await Device.find().populate("host");
     }
 
     public async deviceExists(id) {
@@ -105,11 +105,11 @@ export class DB {
         if (await this.deviceExists(id)) {
             Logger.log(`Updating device with ID "%${id}"`);
 
-            return await Device.findByIdAndUpdate(id, { $set: { host_id: hostId } }, {new: true});
+            return await Device.findByIdAndUpdate(id, { $set: { host: hostId } }, {new: true});
         } else {
             Logger.log(`Inserting device with ID "${id}"`);
 
-            const device = new Device({_id: id, host_id: hostId});
+            const device = new Device({_id: id, host: hostId});
 
             await device.save();
 
@@ -129,13 +129,13 @@ export class DB {
     public async getPrinters() {
         Logger.log("Fetching all printers");
 
-        return await Printer.find().populate("type");
+        return await Printer.find().populate("device").populate("type");
     }
 
     public async getPrinter(id) {
         Logger.log("Fetching printer with ID " + id);
 
-        return await Printer.findById(id).populate("type");
+        return await Printer.findById(id).populate("device").populate("type");
     }
 
     public async printerExists(id) {
@@ -152,7 +152,7 @@ export class DB {
         } else {
             Logger.log(`Inserting printer with ID "${id}"`);
 
-            const printer = new Printer({_id: id, name: name, type: type});
+            const printer = new Printer({_id: id, name: name, type: type, device: id});
 
             await printer.save();
 
