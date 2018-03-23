@@ -3,7 +3,7 @@ import { Server } from "http";
 import { AWSHelper } from "./aws";
 import { DB } from "./db";
 import { Logger } from "./logger";
-import {IMaterial, IMaterialVariant} from "./schemas/material";
+import {IColor, IMaterial, IMaterialVariant} from "./schemas/material";
 import { IPrint } from "./schemas/print";
 import { Socket } from "./socket";
 
@@ -268,8 +268,12 @@ export class Manager {
         const device = await this.db.getDevice(printerId);
         const file = await this.db.getFile(fileId);
 
+        if (!device) {
+            throw new Error(`Device "${printerId}" not found`);
+        }
+
         if (!file) {
-            throw new Error("File not found");
+            throw new Error(`File "${fileId}" not found`);
         }
 
         if (this.io.hostIsConnected(device.host_id)) {
@@ -346,6 +350,10 @@ export class Manager {
 
     public async addMaterial(name: string, brand: string, variants: IMaterialVariant[]) {
         return await this.db.addMaterial(name, brand, variants);
+    }
+
+    public async addMaterialVariant(materialId: string, name: string, color: IColor) {
+        return await this.db.addMaterialVariant(materialId, name, color);
     }
 
     public async updateMaterial(id: string, name: string, brand: string, variants: IMaterialVariant[]) {

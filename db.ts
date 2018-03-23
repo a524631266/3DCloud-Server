@@ -5,7 +5,7 @@ import { Logger } from "./logger";
 import Device from "./schemas/device";
 import File from "./schemas/file";
 import Host from "./schemas/host";
-import { IMaterialVariant, Material } from "./schemas/material";
+import {IColor, IMaterialVariant, Material} from "./schemas/material";
 import Print from "./schemas/print";
 import Printer from "./schemas/printer";
 import PrinterType from "./schemas/printer-type";
@@ -347,8 +347,23 @@ export class DB {
         return material;
     }
 
+    public async addMaterialVariant(materialId: string, name: string, color: IColor): Promise<IMaterialVariant> {
+        const variant = {_id: new Types.ObjectId(), name: name, color: color};
+
+        await Material.findByIdAndUpdate(
+            materialId,
+            {$push: {variants: variant}}
+        );
+
+        return variant;
+    }
+
     public async updateMaterial(id: string, name: string, brand: string, variants: IMaterialVariant[]) {
-        return await Material.findByIdAndUpdate(id, {$set: {_id: id, name: name, brand: brand, variants: variants}}, {new: true});
+        return await Material.findByIdAndUpdate(
+            id,
+            {$set: {_id: id, name: name, brand: brand, variants: variants}},
+            {new: true}
+        );
     }
 
     public async deleteMaterial(id: string) {

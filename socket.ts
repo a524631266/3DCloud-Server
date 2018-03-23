@@ -68,6 +68,7 @@ export class Socket {
             });
 
             client.on("status", (data) => {
+                Logger.debug(`Received statuses for host ${hostId}: ${JSON.stringify(data)}`);
                 statuses[hostId] = data;
             });
 
