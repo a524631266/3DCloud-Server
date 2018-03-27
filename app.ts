@@ -27,7 +27,7 @@ const app = express();
 const server = http.createServer(app);
 
 (async () => {
-    server.listen(Config.SERVER_PORT);
+    server.listen(Config.SERVER_PORT, "0.0.0.0");
     server.on("listening", onListening);
 
     const manager = new Manager(server);

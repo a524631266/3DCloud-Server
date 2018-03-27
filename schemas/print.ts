@@ -12,6 +12,7 @@ export interface IPrint extends mongoose.Document {
     started: Date;
     status: string;
     description: string;
+    timestamp: number;
 }
 
 export const PrintSchema = new Schema({
@@ -24,7 +25,8 @@ export const PrintSchema = new Schema({
     created: { required: true, type: Date },
     started: { required: false, type: Date },
     status: { required: true, type: String },
-    description: { required: false, type: String }
+    description: { required: false, type: String },
+    timestamp: { required: true, type: Number }
 });
 
 const Print = mongoose.model<IPrint>("Print", PrintSchema, "prints");

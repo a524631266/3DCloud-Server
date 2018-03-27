@@ -132,8 +132,8 @@ export class Manager {
         return result;
     }
 
-    public async updatePrint(id: string, status: string, description: any = null) {
-        const print: IPrint = await this.db.updatePrint(id, status, description);
+    public async updatePrint(id: string, status: string, description: any = null, timestamp = Date) {
+        const print: IPrint = await this.db.updatePrint(id, status, description, timestamp);
 
         this.io.emitToUsers("update-print", print);
 
@@ -187,10 +187,9 @@ export class Manager {
 
     public async nextPrint(printerId) {
         const device = await this.db.getDevice(printerId);
+        const host = await this.db.getHost(device.host);
 
-        const hostId = device.host._id;
-
-        if (!this.io.hostIsConnected(hostId)) {
+        if (!this.io.hostIsConnected(host._id)) {
             throw new Error("Host not connected");
         }
 
@@ -200,9 +199,9 @@ export class Manager {
             throw new Error("No prints in queue");
         }
 
-        await this.setPrintPending(print._id.toHexString(), hostId);
+        await this.setPrintPending(print._id.toHexString(), host._id);
 
-        this.io.getHost(hostId).emit("print", {
+        this.io.getHost(host._id).emit("print", {
             printer_id: printerId,
             print_id: print._id,
             key: print.file_id,
@@ -222,10 +221,11 @@ export class Manager {
 
     public async pausePrint(printerId: string) {
         const device = await this.db.getDevice(printerId);
+        const host = await this.db.getHost(device.host);
 
         if (device) {
-            if (this.io.hostIsConnected(device.host._id)) {
-                this.io.getHost(device.host._id).emit("pause", {printer_id: printerId}, (data) => {
+            if (this.io.hostIsConnected(host._id)) {
+                this.io.getHost(host._id).emit("pause", {printer_id: printerId}, (data) => {
                     if (!data.success) {
                         throw new Error(data.error.message);
                     }
@@ -240,10 +240,11 @@ export class Manager {
 
     public async unpausePrint(printerId: string) {
         const device = await this.db.getDevice(printerId);
+        const host = await this.db.getHost(device.host);
 
         if (device) {
-            if (this.io.hostIsConnected(device.host._id)) {
-                this.io.getHost(device.host._id).emit("unpause", {printer_id: printerId}, (data) => {
+            if (this.io.hostIsConnected(host._id)) {
+                this.io.getHost(host._id).emit("unpause", {printer_id: printerId}, (data) => {
                     if (!data.success) {
                         throw new Error(data.error.message);
                     }
@@ -269,6 +270,7 @@ export class Manager {
     public async startPrint(printerId: string, fileId: string) {
         const device = await this.db.getDevice(printerId);
         const file = await this.db.getFile(fileId);
+        const host = await this.db.getHost(device.host);
 
         if (!device) {
             throw new Error(`Device "${printerId}" not found`);
@@ -278,12 +280,12 @@ export class Manager {
             throw new Error(`File "${fileId}" not found`);
         }
 
-        if (device.host) {
-            if (this.io.hostIsConnected(device.host._id)) {
-                const print = await this.db.addPrint(fileId, printerId, "pending", device.host._id);
+        if (host) {
+            if (this.io.hostIsConnected(host._id)) {
+                const print = await this.db.addPrint(fileId, printerId, "pending", host._id);
 
                 return new Promise((resolve, reject) => {
-                    this.io.getHost(device.host._id).emit("print", {
+                    this.io.getHost(host._id).emit("print", {
                         printer_id: printerId,
                         print_id: print._id,
                         key: file._id,
@@ -310,10 +312,11 @@ export class Manager {
 
     public async cancelPrint(printerId: string) {
         const device = await this.getDevice(printerId);
+        const host = await this.getHost(device.host);
 
         if (device) {
-            if (this.io.hostIsConnected(device.host._id)) {
-                this.io.getHost(device.host._id).emit("cancel", {printer_id: printerId}, (data) => {
+            if (this.io.hostIsConnected(host._id)) {
+                this.io.getHost(host._id).emit("cancel", {printer_id: printerId}, (data) => {
                     if (!data.success) {
                         throw new Error(data.error.message);
                     }

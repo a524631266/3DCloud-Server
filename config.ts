@@ -39,6 +39,6 @@ export class Config {
             throw new Error("AWS_REGION must be defined in config.json");
         }
 
-        Logger.level = LogLevel.INFO;
+        Logger.level = LogLevel.DEBUG;
     }
 }

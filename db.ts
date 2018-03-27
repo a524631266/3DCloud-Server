@@ -90,13 +90,13 @@ export class DB {
     public async getDevice(id) {
         Logger.log(`Fetching device with ID "${id}"`);
 
-        return await Device.findById(id).populate("host");
+        return await Device.findById(id);
     }
 
     public async getDevices() {
         Logger.log("Fetching all devices");
 
-        return await Device.find().populate("host");
+        return await Device.find();
     }
 
     public async deviceExists(id) {
@@ -133,13 +133,13 @@ export class DB {
     public async getPrinters() {
         Logger.log("Fetching all printers");
 
-        return await Printer.find().populate("device").populate("type");
+        return await Printer.find();
     }
 
     public async getPrinter(id) {
         Logger.log("Fetching printer with ID " + id);
 
-        return await Printer.findById(id).populate("device").populate("type");
+        return await Printer.findById(id);
     }
 
     public async printerExists(id) {
@@ -152,10 +152,7 @@ export class DB {
         if (await this.printerExists(id)) {
             Logger.log(`Updating printer with ID "${id}"`);
 
-            return await Printer.findByIdAndUpdate(id, { $set: { name: name, type: type } }, {new: true})
-                .populate("device")
-                .populate("type")
-                .exec();
+            return await Printer.findByIdAndUpdate(id, { $set: { name: name, type: type } }, {new: true});
         } else {
             Logger.log(`Inserting printer with ID "${id}"`);
 
@@ -163,7 +160,7 @@ export class DB {
 
             await printer.save();
 
-            return await Printer.findById(id).populate("device").populate("type").exec();
+            return await Printer.findById(id);
         }
     }
 
@@ -235,7 +232,8 @@ export class DB {
             printer_name: printer.name,
             created: new Date(),
             status: status,
-            host_id: hostId
+            host_id: hostId,
+            timestamp: Date.now() * 1000
         });
 
         await print.save();
@@ -260,28 +258,37 @@ export class DB {
 
         return await Print.findByIdAndUpdate(
             new Types.ObjectId(printId),
-            {$set: {status: "pending", host_id: hostId}},
+            {$set: {status: "pending", host_id: hostId, timestamp: Date.now()}},
             {new: true}
         );
     }
 
-    public async updatePrint(printId, status, description = null) {
+    public async updatePrint(printId, status, description = null, timestamp) {
         Logger.log(`Updating print "${printId}" to status "${status}"`);
 
-        const data: { [id: string]: any } = {
-            status: status,
-            description: description
-        };
+        const print = await Print.findById(new Types.ObjectId(printId));
+
+        console.log(print.timestamp + " > " + timestamp + " ? " + (print.timestamp > timestamp));
+
+        if (print.timestamp > timestamp) {
+            return print;
+        }
+
+        print.status = status;
+        print.description = description;
+        print.timestamp = timestamp;
 
         if (status === "running") {
-            data.started = new Date();
+            print.started = new Date();
         }
 
         if (["success", "error", "canceled"].indexOf(status) > -1) {
-            data.completed = new Date();
+            print.completed = new Date();
         }
 
-        return await Print.findByIdAndUpdate(new Types.ObjectId(printId), {$set: data}, {new: true});
+        print.save();
+
+        return print;
     }
 
     public async deletePrint(printId) {

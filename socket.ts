@@ -52,10 +52,11 @@ export class Socket {
 
                 if (await manager.printerExists(data.device.id)) {
                     const printer = await manager.getPrinter(data.device.id);
+                    const type = await manager.getPrinterType(printer.type);
 
                     const send = {
                         device_id: printer._id,
-                        driver: printer.type.driver
+                        driver: type.driver
                     };
 
                     client.emit("printer_updated", send, (response) => {
@@ -72,10 +73,10 @@ export class Socket {
             });
 
             client.on("print-status", async (data) => {
-                Logger.debug(`Received print status notification "${data.status}" for print ${data.print_id}`);
+                Logger.debug(`Received print status notification "${data.status}" for print ${data.print_id} @ ${data.timestamp}`);
 
                 try {
-                    await manager.updatePrint(data.print_id, data.status, data.description);
+                    await manager.updatePrint(data.print_id, data.status, data.description, data.timestamp);
                 } catch (ex) {
                     Logger.error(ex);
                 }
