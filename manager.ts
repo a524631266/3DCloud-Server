@@ -132,8 +132,8 @@ export class Manager {
         return result;
     }
 
-    public async updatePrint(id: string, status: string, description: any = null, timestamp = Date) {
-        const print: IPrint = await this.db.updatePrint(id, status, description, timestamp);
+    public async updatePrint(id: string, status: string, description: any = null) {
+        const print: IPrint = await this.db.updatePrint(id, status, description);
 
         this.io.emitToUsers("update-print", print);
 

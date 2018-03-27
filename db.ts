@@ -268,15 +268,8 @@ export class DB {
 
         const print = await Print.findById(new Types.ObjectId(printId));
 
-        console.log(print.timestamp + " > " + timestamp + " ? " + (print.timestamp > timestamp));
-
-        if (print.timestamp > timestamp) {
-            return print;
-        }
-
         print.status = status;
         print.description = description;
-        print.timestamp = timestamp;
 
         if (status === "running") {
             print.started = new Date();
