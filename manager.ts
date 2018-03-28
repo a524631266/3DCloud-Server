@@ -167,13 +167,14 @@ export class Manager {
     public async updatePrinter(id: string, name: string, typeId: string) {
         const device = await this.db.getDevice(id);
         const type = await this.db.getPrinterType(typeId);
+        const host = await this.db.getHost(device.host);
 
         const printer = await this.db.updatePrinter(id, name, typeId);
 
         // check if device exists and is currently connected
-        if (device && this.io.hostIsConnected(device.host._id)) {
+        if (device && this.io.hostIsConnected(host._id)) {
             // emit device update
-            this.io.getHost(device.host._id).emit("printer_updated", { device_id: id, driver: type.driver }, (data) => {
+            this.io.getHost(host._id).emit("printer_updated", { device_id: id, driver: type.driver }, (data) => {
                 if (!data.success && data.error.type !== "PrinterOfflineError") {
                     throw new Error(data.error.message);
                 }
