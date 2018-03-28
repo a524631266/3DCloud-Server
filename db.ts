@@ -263,7 +263,7 @@ export class DB {
         );
     }
 
-    public async updatePrint(printId, status, description = null, timestamp) {
+    public async updatePrint(printId, status, description = null) {
         Logger.log(`Updating print "${printId}" to status "${status}"`);
 
         const print = await Print.findById(new Types.ObjectId(printId));
