@@ -14,9 +14,9 @@ export class DB {
     public db: Connection;
 
     public async connect() {
-        const url = Config.get("db.url");
-        const port = Config.get("db.port");
-        const name = Config.get("db.database_name");
+        const url = Config.get("db.url", "127.0.0.1");
+        const port = Config.get("db.port", 27017);
+        const name = Config.get("db.database_name", "3dcloud");
 
         Logger.info(`Connecting to database at ${url}:${port}/${name}...`);
 
