@@ -23,8 +23,6 @@ try {
     process.exit(1);
 }
 
-Logger.info(Config.get("aws.access_key_id"));
-
 const app = express();
 const server = http.createServer(app);
 
