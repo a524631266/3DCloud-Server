@@ -23,11 +23,13 @@ try {
     process.exit(1);
 }
 
+Logger.info(Config.get("aws.access_key_id"));
+
 const app = express();
 const server = http.createServer(app);
 
 (async () => {
-    server.listen(Config.SERVER_PORT, "0.0.0.0");
+    server.listen(Config.get("server_port", 3000), "0.0.0.0");
     server.on("listening", onListening);
 
     const manager = new Manager(server);

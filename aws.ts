@@ -9,15 +9,15 @@ export class AWSHelper {
 
     constructor() {
         this.s3 = new AWS.S3({
-            accessKeyId: Config.AWS_ACCESS_KEY_ID,
-            secretAccessKey: Config.AWS_SECRET_ACCESS_KEY,
-            region: Config.AWS_REGION
+            accessKeyId: Config.get("aws.access_key_id"),
+            secretAccessKey: Config.get("aws.secret_access_key"),
+            region: Config.get("aws.region")
         });
     }
 
     public async uploadFile(key, body) {
         const params = {
-            Bucket: Config.AWS_BUCKET,
+            Bucket: Config.get("aws.bucket"),
             Key: UPLOADS_PREFIX + key,
             Body: body
         };
@@ -42,7 +42,7 @@ export class AWSHelper {
         Logger.info("Downloading file with key " + key);
 
         const params = {
-            Bucket: Config.AWS_BUCKET,
+            Bucket: Config.get("aws.bucket"),
             Key: UPLOADS_PREFIX + key
         };
 
@@ -61,7 +61,7 @@ export class AWSHelper {
         Logger.info("Deleting file with key " + key);
 
         const params = {
-            Bucket: Config.AWS_BUCKET,
+            Bucket: Config.get("aws.bucket"),
             Key: UPLOADS_PREFIX + key
         };
 
@@ -78,7 +78,7 @@ export class AWSHelper {
 
     public getPresignedDownloadUrl(key, name) {
         const params = {
-            Bucket: Config.AWS_BUCKET,
+            Bucket: Config.get("aws.bucket"),
             Key: UPLOADS_PREFIX + key,
             Expires: 5,
             ResponseContentDisposition: 'attachment, filename="' + name + '"'

@@ -7,7 +7,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "aws-sdk": "^2.213.1",
+    "aws-sdk": "^2.311.0",
     "body-parser": "~1.18.2",
     "cookie-parser": "~1.4.3",
     "cors": "^2.8.4",
@@ -21,7 +21,7 @@
     "node-sass-middleware": "0.11.0",
     "require-directory": "^2.1.1",
     "serve-favicon": "~2.4.5",
-    "socket.io": "^1.7.4",
+    "socket.io": "^2.1.1",
     "source-map-support": "^0.5.4",
     "uniqid": "^4.1.1"
   },

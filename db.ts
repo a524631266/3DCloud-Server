@@ -14,12 +14,15 @@ export class DB {
     public db: Connection;
 
     public async connect() {
-        Logger.info("Connecting to database at" +
-            `${Config.DATABASE_URL}:${Config.DATABASE_PORT}/${Config.DATABASE_NAME}...`);
+        const url = Config.get("db.url");
+        const port = Config.get("db.port");
+        const name = Config.get("db.database_name");
+
+        Logger.info(`Connecting to database at ${url}:${port}/${name}...`);
 
         return new Promise((resolve, reject) => {
             mongoose.connect(
-                "mongodb://" + Config.DATABASE_URL + ":" + Config.DATABASE_PORT + "/" + Config.DATABASE_NAME
+                "mongodb://" + url + ":" + port + "/" + name
             );
 
             this.db = mongoose.connection;
