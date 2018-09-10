@@ -17,8 +17,6 @@ export class Config {
         let current = this.obj;
 
         for (const item of parts) {
-            Logger.info(item);
-
             if (!(item in current)) {
                 return defaultValue;
             }
