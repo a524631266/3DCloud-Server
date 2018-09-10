@@ -28,7 +28,10 @@ const server = http.createServer(app);
 
 (async () => {
     server.listen(Config.get("server_port", 3000), "0.0.0.0");
-    server.on("listening", onListening);
+    server.on("listening", () => {
+        const addr = server.address();
+        Logger.info("Listening on port " + addr.port);
+    });
 
     const manager = new Manager(server);
 
@@ -115,12 +118,3 @@ const server = http.createServer(app);
         Logger.error(err);
     });
 })();
-
-function onListening() {
-    const addr = server.address();
-    const bind = typeof addr === "string"
-        ? "pipe " + addr
-        : "port " + addr.port;
-
-    Logger.info("Listening on " + bind);
-}
