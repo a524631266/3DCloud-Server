@@ -2,7 +2,7 @@ import * as express from "express";
 
 import { ApiEndpoint } from "../api-endpoint";
 import { ApiEndpointCollection } from "../api-endpoint-collection";
-import { Manager } from "../manager";
+import { DB } from "../db";
 
 export class DevicesEndpointCollection extends ApiEndpointCollection {
     public getEndpoints(): ApiEndpoint[] {
@@ -13,17 +13,17 @@ export class DevicesEndpointCollection extends ApiEndpointCollection {
         ];
     }
 
-    private async getDevices(manager: Manager, req: express.Request, res: express.Response) {
+    private async getDevices(req: express.Request, res: express.Response) {
         try {
-            res.success(await manager.getDevices());
+            res.success(await DB.getDevices());
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async getDevice(manager: Manager, req: express.Request, res: express.Response) {
+    private async getDevice(req: express.Request, res: express.Response) {
         try {
-            const device = await manager.getDevice(req.params.device_id);
+            const device = await DB.getDevice(req.params.device_id);
 
             if (device) {
                 res.success(device);
@@ -35,9 +35,9 @@ export class DevicesEndpointCollection extends ApiEndpointCollection {
         }
     }
 
-    private async deleteDevice(manager: Manager, req: express.Request, res: express.Response) {
+    private async deleteDevice(req: express.Request, res: express.Response) {
         try {
-            await manager.deleteDevice(req.params.device_id);
+            await DB.deleteDevice(req.params.device_id);
 
             res.success();
         } catch (ex) {

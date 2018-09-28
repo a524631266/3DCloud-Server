@@ -1,8 +1,8 @@
 import * as express from "express";
 import { ApiEndpoint } from "../api-endpoint";
 import { ApiEndpointCollection } from "../api-endpoint-collection";
+import { DB } from "../db";
 import { Logger } from "../logger";
-import { Manager } from "../manager";
 
 export class PrintersEndpointCollection extends ApiEndpointCollection {
     public getEndpoints(): ApiEndpoint[] {
@@ -20,23 +20,23 @@ export class PrintersEndpointCollection extends ApiEndpointCollection {
         ];
     }
 
-    private async getPrinters(manager: Manager, req: express.Request, res: express.Response) {
+    private async getPrinters(req: express.Request, res: express.Response) {
         try {
-            res.success(await manager.getPrinters());
+            res.success(await DB.getPrinters());
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async getPrinter(manager: Manager, req: express.Request, res: express.Response) {
+    private async getPrinter(req: express.Request, res: express.Response) {
         try {
-            res.success(await manager.getPrinter(req.params.printer_id));
+            res.success(await DB.getPrinter(req.params.printer_id));
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async updatePrinter(manager: Manager, req: express.Request, res: express.Response) {
+    private async updatePrinter(req: express.Request, res: express.Response) {
         const printerId = req.params.printer_id;
         const name = req.body.name;
         const typeId = req.body.type;
@@ -54,15 +54,15 @@ export class PrintersEndpointCollection extends ApiEndpointCollection {
         Logger.log("Updating printer with ID " + printerId);
 
         try {
-            res.success(await manager.updatePrinter(printerId, name, typeId));
+            res.success(await DB.updatePrinter(printerId, name, typeId));
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async deletePrinter(manager: Manager, req: express.Request, res: express.Response) {
+    private async deletePrinter(req: express.Request, res: express.Response) {
         try {
-            await manager.deletePrinter(req.params.printer_id);
+            await DB.deletePrinter(req.params.printer_id);
 
             res.success();
         } catch (ex) {
@@ -70,11 +70,11 @@ export class PrintersEndpointCollection extends ApiEndpointCollection {
         }
     }
 
-    private async cancelPrint(manager: Manager, req: express.Request, res: express.Response) {
+    private async cancelPrint(req: express.Request, res: express.Response) {
         Logger.info("Sending cancel request");
 
         try {
-            await manager.cancelPrint(req.params.printer_id);
+            // await DB.cancelPrint(req.params.printer_id);
 
             res.success();
         } catch (ex) {
@@ -82,13 +82,13 @@ export class PrintersEndpointCollection extends ApiEndpointCollection {
         }
     }
 
-    private async nextPrint(manager: Manager, req: express.Request, res: express.Response) {
+    private async nextPrint(req: express.Request, res: express.Response) {
         Logger.info("Adding print to queue");
 
         const printerId = req.params.printer_id;
 
         try {
-            await manager.nextPrint(printerId);
+            // await DB.nextPrint(printerId);
 
             res.success();
         } catch (ex) {
@@ -96,11 +96,11 @@ export class PrintersEndpointCollection extends ApiEndpointCollection {
         }
     }
 
-    private async pausePrint(manager: Manager, req: express.Request, res: express.Response) {
+    private async pausePrint(req: express.Request, res: express.Response) {
         Logger.info("Sending pause request");
 
         try {
-            await manager.pausePrint(req.params.printer_id);
+            // await DB.pausePrint(req.params.printer_id);
 
             res.success();
         } catch (ex) {
@@ -108,11 +108,11 @@ export class PrintersEndpointCollection extends ApiEndpointCollection {
         }
     }
 
-    private async queuePrint(manager: Manager, req: express.Request, res: express.Response) {
+    private async queuePrint(req: express.Request, res: express.Response) {
         Logger.info("Adding print to queue");
 
         try {
-            await manager.queuePrint(req.params.printer_id, req.query.id);
+            await DB.queuePrint(req.params.printer_id, req.query.id);
 
             res.success();
         } catch (ex) {
@@ -120,21 +120,21 @@ export class PrintersEndpointCollection extends ApiEndpointCollection {
         }
     }
 
-    private async startPrint(manager: Manager, req: express.Request, res: express.Response) {
+    private async startPrint(req: express.Request, res: express.Response) {
         Logger.info("Sending print request");
 
         try {
-            res.success(await manager.startPrint(req.params.printer_id, req.query.id));
+            // res.success(await DB.startPrint(req.params.printer_id, req.query.id));
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async unpausePrint(manager: Manager, req: express.Request, res: express.Response) {
+    private async unpausePrint(req: express.Request, res: express.Response) {
         Logger.info("Sending unpause request");
 
         try {
-            await manager.unpausePrint(req.params.printer_id);
+            // await DB.unpausePrint(req.params.printer_id);
 
             res.success();
         } catch (ex) {

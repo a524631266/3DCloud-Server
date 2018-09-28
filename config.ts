@@ -9,7 +9,7 @@ export class Config {
 
         this.obj = JSON.parse(content);
 
-        Logger.level = LogLevel.INFO;
+        Logger.level = LogLevel.DEBUG;
     }
 
     public static get(key: string, defaultValue: any = "boink") {

@@ -2,8 +2,8 @@ import * as express from "express";
 import * as uniqid from "uniqid";
 import { ApiEndpoint } from "../api-endpoint";
 import { ApiEndpointCollection } from "../api-endpoint-collection";
+import { DB } from "../db";
 import { Logger } from "../logger";
-import { Manager } from "../manager";
 
 export class FilesEndpointCollection extends ApiEndpointCollection {
     public getEndpoints(): ApiEndpoint[] {
@@ -16,15 +16,15 @@ export class FilesEndpointCollection extends ApiEndpointCollection {
         ];
     }
 
-    private async getFiles(manager: Manager, req: express.Request, res: express.Response) {
+    private async getFiles(req: express.Request, res: express.Response) {
         try {
-            res.success(await manager.getFiles());
+            res.success(await DB.getFiles());
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async uploadFile(manager: Manager, req: express.Request, res: express.Response) {
+    private async uploadFile(req: express.Request, res: express.Response) {
         Logger.log("Got file upload request");
 
         const key = uniqid();
@@ -38,23 +38,23 @@ export class FilesEndpointCollection extends ApiEndpointCollection {
         try {
             Logger.log(`Uploading file to "uploads/${key}"...`);
 
-            res.success(await manager.uploadFile(key, name, req));
+            // res.success(await DB.uploadFile(key, name, req));
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async getFile(manager: Manager, req: express.Request, res: express.Response) {
+    private async getFile(req: express.Request, res: express.Response) {
         try {
-            res.success(await manager.getFile(req.params.file_id));
+            res.success(await DB.getFile(req.params.file_id));
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async deleteFile(manager: Manager, req: express.Request, res: express.Response) {
+    private async deleteFile(req: express.Request, res: express.Response) {
         try {
-            await manager.deleteFile(req.params.file_id);
+            await DB.deleteFile(req.params.file_id);
 
             res.success();
         } catch (ex) {
@@ -62,11 +62,11 @@ export class FilesEndpointCollection extends ApiEndpointCollection {
         }
     }
 
-    private async downloadFile(manager: Manager, req: express.Request, res: express.Response) {
+    private async downloadFile(req: express.Request, res: express.Response) {
         Logger.info("Got download request for file " + req.params.file_id);
 
         try {
-            res.redirect(await manager.getPresignedDownloadUrl(req.params.file_id));
+            // res.redirect(await DB.getPresignedDownloadUrl(req.params.file_id));
         } catch (ex) {
             res.exception(ex);
         }

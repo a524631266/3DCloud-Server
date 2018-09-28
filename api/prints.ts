@@ -1,7 +1,7 @@
 import * as express from "express";
 import { ApiEndpoint } from "../api-endpoint";
 import { ApiEndpointCollection } from "../api-endpoint-collection";
-import { Manager } from "../manager";
+import { DB } from "../db";
 
 export class PrintsEndpointCollection extends ApiEndpointCollection {
     public getEndpoints(): ApiEndpoint[] {
@@ -12,25 +12,25 @@ export class PrintsEndpointCollection extends ApiEndpointCollection {
         ];
     }
 
-    private async getPrints(manager: Manager, req: express.Request, res: express.Response) {
+    private async getPrints(req: express.Request, res: express.Response) {
         try {
-            res.success(await manager.getPrints());
+            res.success(await DB.getPrints());
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async getPrint(manager: Manager, req: express.Request, res: express.Response) {
+    private async getPrint(req: express.Request, res: express.Response) {
         try {
-            res.success(await manager.getPrint(req.params.print_id));
+            res.success(await DB.getPrint(req.params.print_id));
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async deletePrint(manager: Manager, req: express.Request, res: express.Response) {
+    private async deletePrint(req: express.Request, res: express.Response) {
         try {
-            res.success(await manager.deletePrint(req.params.print_id));
+            res.success(await DB.deletePrint(req.params.print_id));
         } catch (ex) {
             res.exception(ex);
         }

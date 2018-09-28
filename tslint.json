@@ -13,6 +13,7 @@
     "object-literal-shorthand": false,
     "trailing-comma": false,
     "object-literal-sort-keys": false,
+    "object-literal-key-quotes": [true, "always"],
     "no-console": false,
     "member-ordering": [
       true,

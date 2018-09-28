@@ -1,11 +1,10 @@
-import * as express from "express";
-import { Manager } from "./manager";
+import { Request, Response } from "express";
 
 export class ApiEndpoint {
     public constructor(
         private route: string,
         private method: string,
-        private handler: (manager: Manager, req: express.Request, res: express.Response) => void
+        private handler: (req: Request, res: Response) => void
     ) { }
 
     public getRoute(): string {
@@ -16,7 +15,7 @@ export class ApiEndpoint {
         return this.method;
     }
 
-    public trigger(manager: Manager, req: express.Request, res: express.Response): void {
-        this.handler(manager, req, res);
+    public trigger(req: Request, res: Response): void {
+        this.handler(req, res);
     }
 }

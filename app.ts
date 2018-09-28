@@ -11,8 +11,9 @@ sourceMapSupport.install();
 import { Request, Response } from "express";
 import { Api } from "./api";
 import { Config } from "./config";
+import { DB } from "./db";
 import { Logger } from "./logger";
-import { Manager } from "./manager";
+import { Socket } from "./socket";
 
 Logger.info("Starting 3DCloud Server");
 
@@ -33,20 +34,14 @@ const server = http.createServer(app);
         Logger.info("Listening on port " + addr.port);
     });
 
-    const manager = new Manager(server);
-
-    try {
-        await manager.init();
-    } catch (ex) {
-        Logger.fatal(ex);
-        process.exit(1);
-    }
+    await DB.connect();
+    Socket.init(server);
 
     app.use((req: Request, res: Response, next) => {
         res.success = (data: any) => {
             res.json({
-                data: data,
-                success: true
+                "data": data,
+                "success": true
             });
         };
 
@@ -54,10 +49,10 @@ const server = http.createServer(app);
             Logger.error(message);
 
             res.status(status).json({
-                success: false,
-                error: {
-                    message: message,
-                    code: status
+                "success": false,
+                "error": {
+                    "message": message,
+                    "code": status
                 }
             });
         };
@@ -66,12 +61,12 @@ const server = http.createServer(app);
             Logger.error(ex.stack);
 
             res.status(ex.status || 500).json({
-                success: false,
-                error: {
-                    type: ex.type || ex.constructor.name || "Error",
-                    message: ex.message,
-                    code: ex.code,
-                    status: ex.status || 500
+                "success": false,
+                "error": {
+                    "type": ex.type || ex.constructor.name || "Error",
+                    "message": ex.message,
+                    "code": ex.code,
+                    "status": ex.status || 500
                 },
             });
         };
@@ -81,7 +76,7 @@ const server = http.createServer(app);
 
     app.use(cors());
 
-    app.use(bodyParser.urlencoded({extended: true}));
+    app.use(bodyParser.urlencoded({"extended": true}));
     app.use(bodyParser.json());
 
     app.use(morgan((tokens, req, res) => {
@@ -98,7 +93,7 @@ const server = http.createServer(app);
         ].join(" ");
     }));
 
-    app.use("/api", Api.init(manager));
+    app.use("/api", Api.init());
 
     // catch 404 and forward to error handler
     app.use((req, res, next) => {

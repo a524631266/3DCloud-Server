@@ -1,7 +1,7 @@
 import * as express from "express";
 import { ApiEndpoint } from "../api-endpoint";
 import { ApiEndpointCollection } from "../api-endpoint-collection";
-import { Manager } from "../manager";
+import { DB } from "../db";
 
 export class HostsEndpointCollection extends ApiEndpointCollection {
     public getEndpoints(): ApiEndpoint[] {
@@ -13,38 +13,38 @@ export class HostsEndpointCollection extends ApiEndpointCollection {
         ];
     }
 
-    private async getHosts(manager: Manager, req: express.Request, res: express.Response) {
+    private async getHosts(req: express.Request, res: express.Response) {
         try {
-            res.success(await manager.getHosts());
+            res.success(await DB.getHosts());
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async getHost(manager: Manager, req: express.Request, res: express.Response) {
+    private async getHost(req: express.Request, res: express.Response) {
         try {
-            res.success(await manager.getHost(req.params.host_id));
+            res.success(await DB.getHost(req.params.host_id));
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async updateHost(manager: Manager, req: express.Request, res: express.Response) {
+    private async updateHost(req: express.Request, res: express.Response) {
         if (!req.body.name) {
             res.error("Name must be specified.");
             return;
         }
 
         try {
-            res.success(await manager.updateHost(req.params.host_id, req.body.name));
+            res.success(await DB.updateHost(req.params.host_id, req.body.name));
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async deleteHost(manager: Manager, req: express.Request, res: express.Response) {
+    private async deleteHost(req: express.Request, res: express.Response) {
         try {
-            await manager.deleteHost(req.params.host_id);
+            await DB.deleteHost(req.params.host_id);
             res.success();
         } catch (ex) {
             res.exception(ex);

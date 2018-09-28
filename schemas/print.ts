@@ -1,5 +1,6 @@
 import * as mongoose from "mongoose";
 import { Schema, Types } from "mongoose";
+import { Socket } from "../socket";
 
 export interface IPrint extends mongoose.Document {
     _id: Types.ObjectId;
@@ -16,17 +17,33 @@ export interface IPrint extends mongoose.Document {
 }
 
 export const PrintSchema = new Schema({
-    _id: { required: true, type: Schema.Types.ObjectId, auto: true },
-    file_id: { required: true, type: String },
-    file_name: { required: true, type: String },
-    printer_id: { required: true, type: String },
-    printer_name: { required: true, type: String },
-    host_id: { required: false, type: String },
-    created: { required: true, type: Date },
-    started: { required: false, type: Date },
-    status: { required: true, type: String },
-    description: { required: false, type: String },
-    timestamp: { required: true, type: Number }
+    "_id": { "required": true, "type": Schema.Types.ObjectId, "auto": true },
+    "file_id": { "required": true, "type": String },
+    "file_name": { "required": true, "type": String },
+    "printer_id": { "required": true, "type": String },
+    "printer_name": { "required": true, "type": String },
+    "host_id": { "required": false, "type": String },
+    "created": { "required": true, "type": Date },
+    "started": { "required": false, "type": Date },
+    "status": { "required": true, "type": String },
+    "description": { "required": false, "type": String },
+    "timestamp": { "required": true, "type": Number }
+});
+
+PrintSchema.post("save", (device) => {
+    Socket.documentSaved("Print", device);
+});
+
+PrintSchema.post("findOneAndUpdate", (device) => {
+    Socket.documentSaved("Print", device);
+});
+
+PrintSchema.post("remove", (device) => {
+    Socket.documentRemoved("Print", device);
+});
+
+PrintSchema.post("findOneAndRemove", (device) => {
+    Socket.documentRemoved("Print", device);
 });
 
 const Print = mongoose.model<IPrint>("Print", PrintSchema, "prints");

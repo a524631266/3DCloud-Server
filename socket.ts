@@ -1,98 +1,31 @@
 import * as http from "http";
+import { Document } from "mongoose";
 import * as SocketIO from "socket.io";
+import { DB } from "./db";
 import { Logger } from "./logger";
-import { Manager } from "./manager";
 
 export class Socket {
-    private usersNamespace: SocketIO.Namespace;
-    private hostsNamespace: SocketIO.Namespace;
+    private static usersNamespace: SocketIO.Namespace;
+    private static hostsNamespace: SocketIO.Namespace;
 
-    private connectedHosts: {[id: string]: SocketIO.Socket};
+    private static connectedHosts: {[id: string]: SocketIO.Socket} = {};
+    private static devices = {};
+    private static statuses = {};
 
-    public constructor(server: http.Server, manager: Manager) {
+    public static init(server: http.Server) {
         Logger.info("Initializing socket...");
 
         const io = SocketIO(server);
-        const devices = {};
-        const statuses = {};
 
         this.hostsNamespace = io.of("/hosts");
         this.usersNamespace = io.of("/users");
-
-        this.connectedHosts = {};
 
         this.usersNamespace.on("connection", async (client) => {
             Logger.info(`Client ${client.id} connected to users channel`);
         });
 
         this.hostsNamespace.on("connection", async (client) => {
-            const hostId = client.handshake.query.host_id;
-
-            if (!hostId) {
-                Logger.error("Client attempted to connect to hosts namespace without host ID");
-                client.disconnect();
-            }
-
-            this.connectedHosts[hostId] = client;
-
-            if (!await manager.hostExists(hostId)) {
-                await manager.addHost(hostId);
-            }
-
-            Logger.info(`Client ${client.id} (host ID ${hostId}) connected to hosts namespace`);
-
-            client.on("printer", async (data) => {
-                Logger.info("Received request for printer with ID " + data.device.id);
-
-                devices[data.device.id] = hostId;
-
-                await manager.updateDevice(data.device.id, hostId);
-
-                this.usersNamespace.emit("device_updated", data.device); // TODO: actual structure
-
-                if (await manager.printerExists(data.device.id)) {
-                    const printer = await manager.getPrinter(data.device.id);
-                    const type = await manager.getPrinterType(printer.type);
-
-                    const send = {
-                        device_id: printer._id,
-                        driver: type.driver
-                    };
-
-                    client.emit("printer_updated", send, (response) => {
-                        Logger.log("printer_updated response: " + JSON.stringify(response));
-
-                        this.usersNamespace.emit("printer_updated", printer);
-                    });
-                }
-            });
-
-            client.on("status", (data) => {
-                Logger.log(`Received statuses for host ${hostId}: ${JSON.stringify(data)}`);
-                statuses[hostId] = data;
-            });
-
-            client.on("print-status", async (data, ack) => {
-                Logger.debug(`Received print status notification "${data.status}" for print ${data.print_id}`);
-
-                try {
-                    await manager.updatePrint(data.print_id, data.status, data.description);
-                } catch (ex) {
-                    Logger.error(ex);
-                }
-
-                // event has been processed
-                ack();
-            });
-
-            client.on("reset", async () => {
-                await manager.resetHostPrints(hostId);
-            });
-
-            client.on("disconnect", async () => {
-                delete this.connectedHosts[hostId];
-                delete statuses[hostId];
-            });
+            await this.onHostConnected(client);
         });
 
         io.on("connection", async (client) =>  {
@@ -106,7 +39,7 @@ export class Socket {
         const statusUpdate = () => {
             Logger.log("Emitting status");
 
-            this.usersNamespace.emit("status", statuses);
+            this.usersNamespace.emit("status", this.statuses);
 
             setTimeout(statusUpdate, 1000);
         };
@@ -116,19 +49,101 @@ export class Socket {
         Logger.info("Socket initialized");
     }
 
-    public hostIsConnected(id: string): boolean {
+    public static documentSaved(type: string, doc: Document): void {
+        Logger.debug(`Sending saved notification for document of type ${type} with ID ${doc._id}`);
+
+        this.emitToUsers("saved", {
+            "type": type,
+            "document": doc
+        });
+    }
+
+    public static documentRemoved(type: string, doc: Document) {
+        Logger.debug(`Sending removed notification for document of type ${type} with ID ${doc._id} to all users`);
+
+        this.emitToUsers("removed", {
+            "type": type,
+            "document": doc
+        });
+    }
+
+    public static hostIsConnected(id: string): boolean {
         return this.getHost(id) !== null;
     }
 
-    public getHost(id: string): SocketIO.Socket {
+    public static getHost(id: string): SocketIO.Socket {
         return this.connectedHosts[id] || null;
     }
 
-    public emitToHosts(event: string | symbol, ...args: any[]): void {
+    public static emitToHosts(event: string | symbol, ...args: any[]): void {
         this.hostsNamespace.emit(event, args);
     }
 
-    public emitToUsers(event: string | symbol, ...args: any[]): void {
+    public static emitToUsers(event: string | symbol, ...args: any[]): void {
         this.usersNamespace.emit(event, args);
+    }
+
+    private static async onHostConnected(client: SocketIO.Socket) {
+        const hostId = client.handshake.query.host_id;
+
+        if (!hostId) {
+            Logger.error("Client attempted to connect to hosts namespace without host ID");
+            client.disconnect();
+        }
+
+        this.connectedHosts[hostId] = client;
+
+        // add host here
+
+        Logger.info(`Client ${client.id} (host ID ${hostId}) connected to hosts namespace`);
+
+        client.on("printer", async (data) => {
+            Logger.info("Received request for printer with ID " + data.device.id);
+
+            this.devices[data.device.id] = hostId;
+
+            await DB.updateDevice(data.device.id, hostId);
+
+            if (await DB.printerExists(data.device.id)) {
+                const printer = await DB.getPrinter(data.device.id);
+                const type = await DB.getPrinterType(printer.type);
+
+                const send = {
+                    "device_id": printer._id,
+                    "driver": type.driver
+                };
+
+                client.emit("printer_updated", send, (response) => {
+                    Logger.log("printer_updated response: " + JSON.stringify(response));
+                });
+            }
+        });
+
+        client.on("status", (data) => {
+            Logger.log(`Received statuses for host ${hostId}: ${JSON.stringify(data)}`);
+            this.statuses[hostId] = data;
+        });
+
+        client.on("print-status", async (data, ack) => {
+            Logger.debug(`Received print status notification "${data.status}" for print ${data.print_id}`);
+
+            try {
+                await DB.updatePrint(data.print_id, data.status, data.description);
+            } catch (ex) {
+                Logger.error(ex);
+            }
+
+            // event has been processed
+            ack();
+        });
+
+        client.on("reset", async () => {
+            // await manager.resetHostPrints(hostId);
+        });
+
+        client.on("disconnect", async () => {
+            delete this.connectedHosts[hostId];
+            delete this.statuses[hostId];
+        });
     }
 }

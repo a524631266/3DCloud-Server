@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { ApiEndpoint } from "../api-endpoint";
 import { ApiEndpointCollection } from "../api-endpoint-collection";
-import { Manager } from "../manager";
+import { DB } from "../db";
 
 export class MaterialsEndpointCollection extends ApiEndpointCollection {
     public getEndpoints(): ApiEndpoint[] {
@@ -15,17 +15,17 @@ export class MaterialsEndpointCollection extends ApiEndpointCollection {
         ];
     }
 
-    private async getMaterials(manager: Manager, req: Request, res: Response): Promise<void> {
+    private async getMaterials(req: Request, res: Response): Promise<void> {
         try {
-            res.success(await manager.getMaterials());
+            res.success(await DB.getMaterials());
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async addMaterial(manager: Manager, req: Request, res: Response): Promise<void> {
+    private async addMaterial(req: Request, res: Response): Promise<void> {
         try {
-            res.success(await manager.addMaterial(
+            res.success(await DB.addMaterial(
                 req.body.name,
                 req.body.brand,
                 req.body.variants
@@ -35,33 +35,33 @@ export class MaterialsEndpointCollection extends ApiEndpointCollection {
         }
     }
 
-    private async addMaterialVariant(manager: Manager, req: Request, res: Response): Promise<void> {
+    private async addMaterialVariant(req: Request, res: Response): Promise<void> {
         try {
-            res.success(await manager.addMaterialVariant(req.params.id, req.body.name, req.body.color));
+            res.success(await DB.addMaterialVariant(req.params.id, req.body.name, req.body.color));
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async getMaterial(manager: Manager, req: Request, res: Response): Promise<void> {
+    private async getMaterial(req: Request, res: Response): Promise<void> {
         try {
-            res.success(await manager.getMaterial(req.params.id));
+            res.success(await DB.getMaterial(req.params.id));
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async updateMaterial(manager: Manager, req: Request, res: Response): Promise<void> {
+    private async updateMaterial(req: Request, res: Response): Promise<void> {
         try {
-            res.success(await manager.updateMaterial(req.params.id, req.body.name, req.body.brand, req.body.variants));
+            res.success(await DB.updateMaterial(req.params.id, req.body.name, req.body.brand, req.body.variants));
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async deleteMaterial(manager: Manager, req: Request, res: Response): Promise<void> {
+    private async deleteMaterial(req: Request, res: Response): Promise<void> {
         try {
-            res.success(await manager.deleteMaterial(req.params.id));
+            res.success(await DB.deleteMaterial(req.params.id));
         } catch (ex) {
             res.exception(ex);
         }

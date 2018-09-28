@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { ApiEndpoint } from "../api-endpoint";
 import { ApiEndpointCollection } from "../api-endpoint-collection";
-import { Manager } from "../manager";
+import { DB } from "../db";
 
 export class PrinterTypesEndpointCollection extends ApiEndpointCollection {
     public getEndpoints(): ApiEndpoint[] {
@@ -12,41 +12,39 @@ export class PrinterTypesEndpointCollection extends ApiEndpointCollection {
         ];
     }
 
-    private async getPrinterTypes(manager: Manager, req: Request, res: Response) {
+    private async getPrinterTypes(req: Request, res: Response) {
         try {
-            res.success(await manager.getPrinterTypes());
+            res.success(await DB.getPrinterTypes());
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async getPrinterType(manager: Manager, req: Request, res: Response) {
+    private async getPrinterType(req: Request, res: Response) {
         try {
-            res.success(await manager.getPrinterType(req.params.id));
+            res.success(await DB.getPrinterType(req.params.id));
         } catch (ex) {
             res.exception(ex);
         }
     }
 
-    private async addPrinterType(manager: Manager, req: Request, res: Response) {
-        if (!name) {
-            if (!req.body.name) {
-                res.error("Name must be specified");
-                return;
-            }
+    private async addPrinterType(req: Request, res: Response) {
+        if (!req.body.name) {
+            res.error("Name must be specified");
+            return;
+        }
 
-            if (!req.body.driver) {
-                res.error("Driver must be specified");
-                return;
-            }
+        if (!req.body.driver) {
+            res.error("Driver must be specified");
+            return;
+        }
 
-            try {
-                await manager.addPrinterType(req.body.name, req.body.driver);
+        try {
+            await DB.addPrinterType(req.body.name, req.body.driver);
 
-                res.success();
-            } catch (ex) {
-                res.exception(ex);
-            }
+            res.success();
+        } catch (ex) {
+            res.exception(ex);
         }
     }
 }
